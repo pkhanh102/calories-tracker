@@ -12,6 +12,9 @@ app.use(express.json()); // Parse incoming JSON
 
 app.use('/api/auth', authRoutes); // Route group for /register and /login
 
+const foodsRoutes = require('./routes/foods');
+app.use('/api/foods', foodsRoutes);
+
 app.listen(PORT, () =>  {
     console.log(`Server running on port ${PORT}`);
 });
