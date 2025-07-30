@@ -9,10 +9,15 @@ const {
 const handleCreateFood = async (req, res) => {
     try {
         const userId = req.user.id; // comes from JWT middleware
-        const foodData = req.body;
+        const { name, base_amount, unit, calories, protein, carbs, fats } = req.body;
 
-        const newFood = await createSavedFood(userId, foodData);
+        if (!name || !base_amount || !unit || calories == null || protein == null || carbs == null || fats == null) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        const newFood = await createSavedFood(userId, { name, base_amount, unit, calories, protein, carbs, fats, });
         res.status(201).json(newFood);
+
     } catch(err) {
         console.error('Error creating saved food:', err);
         res.status(500).json({ message: 'Server error creating food' });
@@ -26,6 +31,7 @@ const handleGetFood = async (req, res) => {
 
         const foods = await getSavedFoodsByUser(userId);
         res.status(200).json(foods);
+
     } catch(err) {
         console.error('Error getting saved foods:', err);
         res.status(500).json({ message: 'Server error fetching foods' });
@@ -37,15 +43,23 @@ const handleUpdateFood = async (req, res) => {
     try {
         const userId = req.user.id;
         const foodId = req.params.id;
-        const updatedData = req.body;
+        const { name, base_amount, unit, calories, protein, carbs, fats } = req.body;
 
-        const updatedFood = await updateSavedFood(foodId, userId, updatedData);
-
-        if (!updatedFood) {
-            return res.status(404).json({ message: 'Food not found or not owned by user' });
+        if (!name || !base_amount || !unit || calories == null || protein == null || carbs == null || fats == null) {
+            return res.status(400).json({ message: 'Missing required fields' });
         }
 
+        const updatedFood = await updateSavedFood(foodId, userId, {
+            name,
+            base_amount,
+            unit,
+            calories,
+            protein,
+            carbs,
+            fats,
+        });
         res.status(200).json(updatedFood);
+
     } catch(err) {
         console.error('Error updating saved food:', err);
         res.status(500).json({ message: 'Server error updating food' });
@@ -65,6 +79,7 @@ const handleDeleteFood = async (req, res) => {
         }
 
         res.status(200).json(deletedFood);
+        
     } catch(err) {
         console.error('Error deleting saved food:', err);
         res.status(500).json({ message: 'Server error deleting food' });
