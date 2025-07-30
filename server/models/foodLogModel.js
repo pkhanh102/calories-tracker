@@ -30,7 +30,38 @@ const getFoodLogsByDate = async (userId, date) => {
     return result.rows;
 };
 
+// Update an existing food log by ID
+const updateFoodLog = async (logId, userId, updatedData) => {
+    const { consumed_amount, meal_type, date } = updatedData
+    
+    const result = await pool.query(
+        `UPDATE food_logs
+        SET consumed_amount = $1,
+            meal_type = $2,
+            date = $3
+        WHERE id = $4 AND user_id = $5
+        RETURNING *`,
+        [consumed_amount, meal_type, date, logId, userId]
+    );
+
+    return result.rows[0]; // May be null if not found or unauthorized
+};
+
+// Delete a food log by ID
+const deletedFoodLog = async (logId, userId) => {
+    const result = await pool.query(
+        `DELETE FROM food_logs
+        WHERE id = $1 AND user_id = $2
+        RETURNING *`,
+        [logId, userId]
+    );
+
+    return result.rows[0];
+};
+
 module.exports = {
     createFoodLog,
     getFoodLogsByDate,
+    updateFoodLog,
+    deletedFoodLog,
 };

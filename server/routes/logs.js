@@ -4,6 +4,8 @@ const router = express.Router();
 const {
     handleCreateLog,
     handleGetLogsByDate,
+    handleUpdateLog,
+    handleDeleteLog,
 } = require('../controllers/foodLogControllers');
 
 const authMiddleware = require('../middleware/authMiddleware');
@@ -18,4 +20,14 @@ router.post('/', authMiddleware, handleCreateLog);
 // @access  Private
 router.get('/', authMiddleware, handleGetLogsByDate);
 
-module.exports = router
+// @route   PUT /api/logs/:id
+// @desc    Update food logs 
+// @access  Private
+router.put('/:id', authMiddleware, handleUpdateLog);
+
+// @route   DELETE /api/logs/:id
+// @desc    Delete food logs 
+// @access  Private
+router.delete('/:id', authMiddleware, handleDeleteLog);
+
+module.exports = router;
