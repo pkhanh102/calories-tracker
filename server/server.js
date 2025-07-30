@@ -43,6 +43,10 @@ app.use('/api/logs', logRoutes);
 const goalRoutes = require('./routes/goals');
 app.use('/api/goals', goalRoutes);
 
+// Nutrition Summary route
+const summaryRoutes = require('./routes/summary');
+app.use('/api/summary', summaryRoutes);
+
 // ───────────────────────────────────────────────
 // Start Server
 // ───────────────────────────────────────────────
