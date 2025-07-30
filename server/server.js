@@ -35,9 +35,13 @@ app.use('/api/auth', authRoutes);
 const foodsRoutes = require('./routes/foods');
 app.use('/api/foods', foodsRoutes);
 
-// Food logs routes (log by date/meal)
+// Food logs routes (CRUD, log by date/meal)
 const logRoutes = require('./routes/logs');
 app.use('/api/logs', logRoutes);
+
+// Nutrition goal route (set, get goal)
+const goalRoutes = require('./routes/goals');
+app.use('/api/goals', goalRoutes);
 
 // ───────────────────────────────────────────────
 // Start Server
