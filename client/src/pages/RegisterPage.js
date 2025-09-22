@@ -56,8 +56,13 @@ function RegisterPage() {
                 <br />
                 <button type="submit">Register</button>
             </form>
+
             <br />
             {message && <p>{message}</p>}
+
+            <p>
+                Already have an account? <a href='/login'>Login here!</a>
+            </p>
         </div>
     );
 }
