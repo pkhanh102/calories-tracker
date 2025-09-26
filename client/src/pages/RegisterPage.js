@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import API_BASE from "../apiConfig";
 
 function RegisterPage() {
     const [formData, setFormData] = useState({
@@ -20,7 +21,7 @@ function RegisterPage() {
         e.preventDefault();
 
         try {
-            const res = await axios.post('http://localhost:4000/api/auth/register', formData);
+            const res = await axios.post(`${API_BASE}/auth/register`, formData);
             setMessage('Registration successful! You can now log in.');
         } catch (err) {
             console.error(err);

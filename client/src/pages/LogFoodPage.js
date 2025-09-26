@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
+import API_BASE from "../apiConfig";
 
 function LogFoodPage() {
     const [savedFoods, setSavedFoods] = useState([]);
@@ -17,7 +18,7 @@ function LogFoodPage() {
     useEffect(() => {
         const fetchFood = async () => {
             try {
-                const res = await axios.get('http://localhost:4000/api/foods', {
+                const res = await axios.get(`${API_BASE}/foods`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setSavedFoods(res.data);
@@ -35,7 +36,7 @@ function LogFoodPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:4000/api/logs', {
+            await axios.post(`${API_BASE}/logs`, {
                 saved_food_id: form.saved_food_id,
                 consumed_amount: form.consumed_amount,
                 meal_type: form.meal_type,

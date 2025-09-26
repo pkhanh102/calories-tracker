@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
+import API_BASE from "../apiConfig";
 
 function GoalPage() {
     const [goals, setGoals] = useState({
@@ -16,7 +17,7 @@ function GoalPage() {
         const fetchGoals = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await axios.get('http://localhost:4000/api/goals', {
+                const res = await axios.get(`${API_BASE}/goals`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setGoals(res.data)
@@ -52,7 +53,7 @@ function GoalPage() {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:4000/api/goals', {
+            await axios.post(`${API_BASE}/goals`, {
                 calories_goal: Number(goals.calories_goal),
                 protein_percent: Number(goals.protein_percent),
                 carb_percent: Number(goals.carb_percent),

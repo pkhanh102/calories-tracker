@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import API_BASE from "../apiConfig";
 
 function LoginPage() {
     const [formData, setFormData] = useState({
@@ -22,7 +23,7 @@ function LoginPage() {
         e.preventDefault();
 
         try {
-            const res = await axios.post('http://localhost:4000/api/auth/login', formData);
+            const res = await axios.post(`${API_BASE}/auth/login`, formData);
 
             const token = res.data.token;
 

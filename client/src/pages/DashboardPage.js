@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import API_BASE from "../apiConfig";
 
 function DashboardPage() {
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ function DashboardPage() {
         const fetchSummary = async () => {
             try {
                 const today = dayjs().format('YYYY-MM-DD');
-                const res = await axios.get(`http://localhost:4000/api/summary?date=${today}`, {
+                const res = await axios.get(`${API_BASE}/summary?date=${today}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
