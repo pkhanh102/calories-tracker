@@ -9,6 +9,7 @@ import GoalPage from './pages/GoalPage';
 import LogFoodPage from './pages/LogFoodPage';
 import SavedFoodsPage from './pages/SavedFoodsPage';
 import Layout from './pages/Layout';
+import FoodLogHistoryPage from './pages/FoodLogHistoryPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path='/goals' element={<GoalPage />} />
         <Route path='/log-food' element={<LogFoodPage />} />
         <Route path='/saved-food' element={<SavedFoodsPage />} />
+        <Route path='/food-log-history' element={<FoodLogHistoryPage />} />
       </Route>
     </Routes>
   );
