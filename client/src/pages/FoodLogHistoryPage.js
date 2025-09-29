@@ -6,6 +6,8 @@ function FoodLogHistoryPage() {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState('');
+  const [editingLogId, setEditingLogId] = useState(null);
+  const [editingAmount, setEditingAmount] = useState('');
 
   const fetchSummary = async (selectedDate) => {
     try {
@@ -34,6 +36,33 @@ function FoodLogHistoryPage() {
     } catch (err) {
       console.error('Failed to delete log:', err);
       alert('Error deleting log.');
+    }
+  };
+
+  const startEdit = (item) => {
+    setEditingLogId(item.id);
+    setEditingAmount(item.consumed_amount);
+  };
+
+  const cancelEdit = () => {
+    setEditingAmount(null);
+    setEditingAmount('');
+  };
+
+  const handleUpdateLog = async (logId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${API_BASE}/logs/${logId}`, {
+        consumed_amount: editingAmount
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      cancelEdit();
+      fetchSummary(date);
+    } catch (err) {
+      console.error('Failed to update log:', err);
+      alert('Error updating log.');
     }
   };
 
@@ -86,7 +115,24 @@ function FoodLogHistoryPage() {
                       {item.calculated_protein}g P / 
                       {item.calculated_carbs}g C / 
                       {item.calculated_fats}g F &nbsp;
-                      <button onClick={() => handleDeleteLog(item.id)}>Delete</button>
+
+                      {editingLogId === item.id ? (
+                        <>
+                          <input 
+                            type="number"
+                            value={editingAmount}
+                            onChange={(e) => setEditingAmount(e.target.value)}
+                            style={{ width: '80px' }}
+                          />
+                          <button onClick={() => handleUpdateLog(item.id)}>Save</button>
+                          <button onClick={() => cancelEdit()}>Cancel</button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => startEdit(item)}>Edit</button>
+                          <button onClick={() => handleDeleteLog(item.id)} style={{ color: 'red', marginLeft: '0.5rem' }}>Delete</button>
+                        </>
+                      )}
                     </li>
                   ))}
                 </ul>

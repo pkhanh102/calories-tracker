@@ -127,35 +127,67 @@ function SavedFoodsPage() {
  
     return (
         <div style={{ padding: '2rem' }}>
-            <div style={{ marginBottom: '2rem' }}>
+            {/* Add Food Form */}
+            <div style={{ marginBottom: '2rem', maxWidth: '400px'}}>
                 <h2>Add New Saved Food</h2>
                 <form onSubmit={handleAddFood}>
-                    <input name="name" value={newFood.name} onChange={handleInputChange} placeholder="Food name" required /><br />
-                    <input name="base_amount" type="number" value={newFood.base_amount} onChange={handleInputChange} placeholder="Base amount (e.g. 100g)" required /><br />
-                    <input name="unit" value={newFood.unit} onChange={handleInputChange} placeholder="Unit (e.g. g, ml)" required /><br />
-                    <input name="calories" type="number" value={newFood.calories} onChange={handleInputChange} placeholder="Calories" required /><br />
-                    <input name="protein" type="number" value={newFood.protein} onChange={handleInputChange} placeholder="Protein (g)" required /><br />
-                    <input name="carbs" type="number" value={newFood.carbs} onChange={handleInputChange} placeholder="Carbs (g)" required /><br />
-                    <input name="fats" type="number" value={newFood.fats} onChange={handleInputChange} placeholder="Fats" required /><br />
-                    <button type="submit">Add Food</button><br />
+                    <label>
+                        Food Name:
+                        <input name="name" value={newFood.name} onChange={handleInputChange} placeholder="e.g. Banana" required />
+                    </label><br />
+
+                    <label>
+                        Base Amount:
+                        <input name="base_amount" type="number" value={newFood.base_amount} onChange={handleInputChange} placeholder="e.g. 100" required />
+                    </label><br />
+
+                    <label>
+                        Unit:
+                        <input name="unit" value={newFood.unit} onChange={handleInputChange} placeholder="e.g. g or ml" required />
+                    </label><br />
+
+                    <label>
+                        Calories:
+                        <input name="calories" type="number" value={newFood.calories} onChange={handleInputChange} required />
+                    </label><br />
+
+                    <label>
+                        Protein (g):
+                        <input name="protein" type="number" value={newFood.protein} onChange={handleInputChange} required />
+                    </label><br />
+
+                    <label>
+                        Carbs (g):
+                        <input name="carbs" type="number" value={newFood.carbs} onChange={handleInputChange} required />
+                    </label><br />
+
+                    <label>
+                        Fats (g):
+                        <input name="fats" type="number" value={newFood.fats} onChange={handleInputChange} required />
+                    </label><br />
+
+                    <button type="submit" style={{ marginTop: '1rem' }}>Add Food</button>
                 </form>
             </div>
 
+            {/* Saved Food Table */}
             <h2>Saved Foods</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
+
             {foods.length === 0 ? (
                 <p>No saved foods yet.</p>
             ) : (
                 <table border="1" cellPadding="10" style={{ borderCollapse: 'collapse', width: '100%' }}>
-                    <thead>
+                    <thead style={{ background: '#f0f0f0' }}>
                         <tr>
                             <th>Name</th>
-                            <th>Base Amount</th>
+                            <th>Base</th>
                             <th>Unit</th>
                             <th>Calories</th>
                             <th>Protein</th>
                             <th>Carbs</th>
                             <th>Fats</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -185,10 +217,8 @@ function SavedFoodsPage() {
                                         <td>{food.carbs}</td>
                                         <td>{food.fats}</td>
                                         <td>
-                                            <button onClick={() => handleEditClick(food)}>Edit</button>
-                                            <button onClick={() => confirmDelete(food.id)} style={{ marginLeft: '0.5rem', color: 'red' }} >
-                                                Delete
-                                            </button>
+                                            <button onClick={() => handleEditClick(food)}>Edit</button>{' '}
+                                            <button onClick={() => confirmDelete(food.id)} style={{ color: 'red' }}>Delete</button>{' '}
                                         </td>
                                     </>
                                 )}

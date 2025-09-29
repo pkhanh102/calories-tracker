@@ -35,18 +35,11 @@ function DashboardPage() {
         fetchSummary();
     }, [navigate]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/login');
-    };
-
     if (loading) return <p style={{ padding: '2rem' }}>Loading...</p>;
 
     return (
         <div style={{ padding: '2rem' }}>
             <h2>Dashboard</h2>
-            <button onClick={handleLogout}>Logout</button>
-            <hr />
 
             <h3>Today's Nutrition Summary</h3>
             { summary ? (
@@ -59,7 +52,30 @@ function DashboardPage() {
             ) : (
                 <p>No summary available</p>
             )}
-        </div>
+
+            <hr />
+            <h3>Today's Log</h3>
+            {['breakfast', 'lunch', 'dinner', 'snack'].map(meal => (
+                <div key={meal} style={{ marginBottom: '1rem' }}>
+                    <h4 style={{ textTransform: 'capitalize' }}>{meal}</h4>
+                    {summary.by_meal[meal] && summary.by_meal[meal].length > 0 ? (
+                        <ul>
+                            {summary.by_meal[meal].map(item => (
+                                <li key={item.id}>
+                                    {item.name} - {item.consumed_amount}{item.unit} →
+                                    {item.calculated_calories} kcal |
+                                    {item.calculated_protein}g P /
+                                    {item.calculated_carbs}g C /
+                                    {item.calculated_fats}g F
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No items logged.</p>
+                    )}
+                </div>
+            ))}
+         </div>
     );
 }
 
