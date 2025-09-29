@@ -81,7 +81,7 @@ function FoodLogHistoryPage() {
                 <ul>
                   {summary.by_meal[meal].map((item) => (
                     <li key={item.id}>
-                      {item.name} – {item.consumed_amount}{item.unit} →  
+                      {item.name} - {item.consumed_amount}{item.unit} →   
                       {item.calculated_calories} kcal | 
                       {item.calculated_protein}g P / 
                       {item.calculated_carbs}g C / 

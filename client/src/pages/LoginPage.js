@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import API_BASE from "../apiConfig";
+import AuthContext from '../context/AuthContext';
 
 function LoginPage() {
+    const { login } = useContext(AuthContext)
+    const navigate = useNavigate();
+    
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
 
     const [message, setMessage] = useState('');
-    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData((prev) => ({
@@ -24,15 +27,9 @@ function LoginPage() {
 
         try {
             const res = await axios.post(`${API_BASE}/auth/login`, formData);
-
-            const token = res.data.token;
-
-            // Save token to localStorage
-            localStorage.setItem('token', token);
-
+            login(res.data.token);
             // Redirect to dashboard
             navigate('/');
-
         } catch (err) {
             console.error(err);
             setMessage('❌ Login failed. Check your email and password.');

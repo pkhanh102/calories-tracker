@@ -10,21 +10,26 @@ import LogFoodPage from './pages/LogFoodPage';
 import SavedFoodsPage from './pages/SavedFoodsPage';
 import Layout from './pages/Layout';
 import FoodLogHistoryPage from './pages/FoodLogHistoryPage';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
-    <Routes>
+    <Routes>  
       {/* Public Routes */}
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
 
-      {/* Protected Routes under Layout */}
-      <Route element={<Layout />}>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path='/goals' element={<GoalPage />} />
-        <Route path='/log-food' element={<LogFoodPage />} />
-        <Route path='/saved-food' element={<SavedFoodsPage />} />
-        <Route path='/food-log-history' element={<FoodLogHistoryPage />} />
+      {/* Protected Routes inside Layout */}
+      <Route path="/" element={
+        <PrivateRoute>
+          <Layout />
+        </PrivateRoute>
+      }>
+        <Route index element={<DashboardPage />} />
+        <Route path="goals" element={<GoalPage />} />
+        <Route path="log-food" element={<LogFoodPage />} />
+        <Route path="saved-food" element={<SavedFoodsPage />} />
+        <Route path="history" element={<FoodLogHistoryPage />} />
       </Route>
     </Routes>
   );
