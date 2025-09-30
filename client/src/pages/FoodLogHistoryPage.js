@@ -45,7 +45,7 @@ function FoodLogHistoryPage() {
   };
 
   const cancelEdit = () => {
-    setEditingAmount(null);
+    setEditingLogId(null);
     setEditingAmount('');
   };
 
