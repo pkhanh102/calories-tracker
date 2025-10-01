@@ -20,12 +20,8 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
 
       {/* Protected Routes inside Layout */}
-      <Route path="/" element={
-        <PrivateRoute>
-          <Layout />
-        </PrivateRoute>
-      }>
-        <Route index element={<DashboardPage />} />
+      <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+        <Route path='/' element={<DashboardPage />} />
         <Route path="goals" element={<GoalPage />} />
         <Route path="log-food" element={<LogFoodPage />} />
         <Route path="saved-food" element={<SavedFoodsPage />} />
