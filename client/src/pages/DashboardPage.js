@@ -42,7 +42,7 @@ function DashboardPage() {
             <h2>Dashboard</h2>
 
             <h3>Today's Nutrition Summary</h3>
-            { summary ? (
+            {summary ? (
                 <div>
                     <p>Calories: {summary.totals.calories} / {summary.goals.calories_goal} kcal</p>
                     <p>Protein: {summary.totals.protein}g / {summary.goals.protein_goal_g}g</p>
@@ -55,27 +55,31 @@ function DashboardPage() {
 
             <hr />
             <h3>Today's Log</h3>
-            {['breakfast', 'lunch', 'dinner', 'snack'].map(meal => (
-                <div key={meal} style={{ marginBottom: '1rem' }}>
-                    <h4 style={{ textTransform: 'capitalize' }}>{meal}</h4>
-                    {summary.by_meal[meal] && summary.by_meal[meal].length > 0 ? (
-                        <ul>
-                            {summary.by_meal[meal].map(item => (
-                                <li key={item.id}>
-                                    {item.name} - {item.consumed_amount}{item.unit} →
-                                    {item.calculated_calories} kcal |
-                                    {item.calculated_protein}g P /
-                                    {item.calculated_carbs}g C /
-                                    {item.calculated_fats}g F
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No items logged.</p>
-                    )}
-                </div>
-            ))}
-         </div>
+            {summary?.by_meal ? (
+                ['breakfast', 'lunch', 'dinner', 'snack'].map(meal => (
+                    <div key={meal} style={{ marginBottom: '1rem' }}>
+                        <h4 style={{ textTransform: 'capitalize' }}>{meal}</h4>
+                        {summary.by_meal[meal] && summary.by_meal[meal].length > 0 ? (
+                            <ul>
+                                {summary.by_meal[meal].map(item => (
+                                    <li key={item.id}>
+                                        {item.name} - {item.consumed_amount}{item.unit} →
+                                        {item.calculated_calories} kcal |
+                                        {item.calculated_protein}g P /
+                                        {item.calculated_carbs}g C /
+                                        {item.calculated_fats}g F
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>No items logged.</p>
+                        )}
+                    </div>
+                ))
+            ) : (
+                <p>Loading log data...</p>
+            )}
+        </div>
     );
 }
 
