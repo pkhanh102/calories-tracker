@@ -3,6 +3,9 @@
 A fullstack web app to help users track their daily calorie and macronutrient intake.  
 Users can log food, manage saved foods, and set personalized nutrition goals.
 
+Live demo: https://calories-tracker-brown.vercel.app/
+Backend API: https://calories-tracker-be.onrender.com/api
+
 ---
 
 ## ✅ Features (MVP)
@@ -33,7 +36,7 @@ Users can log food, manage saved foods, and set personalized nutrition goals.
 
 ---
 
-## 🔧 Development Setup
+## 🔧 Development Setup Local
 
 ### 1. Backend (`/server`)
 - Install dependencies  

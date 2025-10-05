@@ -35,35 +35,40 @@ function DashboardPage() {
         fetchSummary();
     }, [navigate]);
 
-    if (loading) return <p style={{ padding: '2rem' }}>Loading...</p>;
+    if (loading) return <p className='p-6 text-gray=600'>Loading...</p>;
 
     return (
-        <div style={{ padding: '2rem' }}>
-            <h2>Dashboard</h2>
+        <div className="p-6 max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-green-700 mb-6">Dashboard</h2>
 
-            <h3>Today's Nutrition Summary</h3>
-            {summary ? (
-                <div>
-                    <p>Calories: {summary.totals.calories} / {summary.goals.calories_goal} kcal</p>
-                    <p>Protein: {summary.totals.protein}g / {summary.goals.protein_goal_g}g</p>
-                    <p>Carbs: {summary.totals.carbs}g / {summary.goals.carb_goal_g}g</p>
-                    <p>Fats: {summary.totals.fats}g / {summary.goals.fat_goal_g}g</p>
-                </div>
-            ) : (
-                <p>No summary available</p>
-            )}
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Today's Nutrition Summary</h3>
+                {summary ? (
+                    <div className="space-y-1 text-gray-700">
+                        <p>Calories: <strong>{summary.totals.calories}</strong> / {summary.goals.calories_goal} kcal</p>
+                        <p>Protein: <strong>{summary.totals.protein}g</strong> / {summary.goals.protein_goal_g}g</p>
+                        <p>Carbs: <strong>{summary.totals.carbs}g</strong> / {summary.goals.carb_goal_g}g</p>
+                        <p>Fats: <strong>{summary.totals.fats}g</strong> / {summary.goals.fat_goal_g}g</p>
+                    </div>
+                ) : (
+                    <p className="text-gray-500">No summary available.</p>
+                )}
+            </div>
 
-            <hr />
-            <h3>Today's Log</h3>
+            <hr className="border-gray-300 mb-6" />
+
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Today's Log</h3>
             {summary?.by_meal ? (
                 ['breakfast', 'lunch', 'dinner', 'snack'].map(meal => (
-                    <div key={meal} style={{ marginBottom: '1rem' }}>
-                        <h4 style={{ textTransform: 'capitalize' }}>{meal}</h4>
+                    <div key={meal} className="mb-6">
+                        <h4 className="text-lg font-medium text-green-600 mb-2">
+                            {meal.charAt(0).toUpperCase() + meal.slice(1)}
+                        </h4>
                         {summary.by_meal[meal] && summary.by_meal[meal].length > 0 ? (
-                            <ul>
+                            <ul className="space-y-1 list-disc list-inside text-gray-700">
                                 {summary.by_meal[meal].map(item => (
                                     <li key={item.id}>
-                                        {item.name} - {item.consumed_amount}{item.unit} →
+                                        <span className="font-medium">{item.name}</span> - {item.consumed_amount}{item.unit} →
                                         {item.calculated_calories} kcal |
                                         {item.calculated_protein}g P /
                                         {item.calculated_carbs}g C /
@@ -72,12 +77,12 @@ function DashboardPage() {
                                 ))}
                             </ul>
                         ) : (
-                            <p>No items logged.</p>
+                            <p className="text-gray-500">No items logged.</p>
                         )}
                     </div>
                 ))
             ) : (
-                <p>Loading log data...</p>
+                <p className="text-gray-500">Loading log data...</p>
             )}
         </div>
     );
