@@ -7,7 +7,6 @@ function SavedFoodsPage() {
     const [error, setError] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [editingFood, setEditingFood] = useState({});
-
     const [newFood, setNewFood] = useState({
         name: '',
         base_amount: '',
@@ -126,106 +125,94 @@ function SavedFoodsPage() {
     };
  
     return (
-        <div style={{ padding: '2rem' }}>
+        <div className="p-6 max-w-5xl mx-auto">
             {/* Add Food Form */}
-            <div style={{ marginBottom: '2rem', maxWidth: '400px'}}>
-                <h2>Add New Saved Food</h2>
-                <form onSubmit={handleAddFood}>
-                    <label>
-                        Food Name:
-                        <input name="name" value={newFood.name} onChange={handleInputChange} placeholder="e.g. Banana" required />
-                    </label><br />
-
-                    <label>
-                        Base Amount:
-                        <input name="base_amount" type="number" value={newFood.base_amount} onChange={handleInputChange} placeholder="e.g. 100" required />
-                    </label><br />
-
-                    <label>
-                        Unit:
-                        <input name="unit" value={newFood.unit} onChange={handleInputChange} placeholder="e.g. g or ml" required />
-                    </label><br />
-
-                    <label>
-                        Calories:
-                        <input name="calories" type="number" value={newFood.calories} onChange={handleInputChange} required />
-                    </label><br />
-
-                    <label>
-                        Protein (g):
-                        <input name="protein" type="number" value={newFood.protein} onChange={handleInputChange} required />
-                    </label><br />
-
-                    <label>
-                        Carbs (g):
-                        <input name="carbs" type="number" value={newFood.carbs} onChange={handleInputChange} required />
-                    </label><br />
-
-                    <label>
-                        Fats (g):
-                        <input name="fats" type="number" value={newFood.fats} onChange={handleInputChange} required />
-                    </label><br />
-
-                    <button type="submit" style={{ marginTop: '1rem' }}>Add Food</button>
+            <div className="mb-10 bg-white p-6 rounded shadow max-w-md">
+                <h2 className="text-2xl font-bold text-green-700 mb-6">Add New Saved Food</h2>
+                <form onSubmit={handleAddFood} className="space-y-4">
+                    {['name', 'base_amount', 'unit', 'calories', 'protein', 'carbs', 'fats'].map((field, index) => (
+                        <div key={index}>
+                            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                                {field.replace('_', ' ')};
+                            </label>
+                            <input 
+                                type={field === 'name' || field === 'unit' ?  'text' : 'number'}
+                                name={field}
+                                value={newFood[field]}
+                                onChange={handleInputChange}
+                                required
+                                className="w-full p-2 border border-gray-300 rounded"
+                            />
+                        </div>
+                    ))}
+                    <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">Add Food</button>
                 </form>
             </div>
 
             {/* Saved Food Table */}
-            <h2>Saved Foods</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <h2 className="text-2xl font-bold text-green-700 mb-4">Saved Foods</h2>
+            {error && <p className="text-red-600 mb-4">{error}</p>}
 
             {foods.length === 0 ? (
-                <p>No saved foods yet.</p>
+                <p className="text-gray-500">No saved foods yet.</p>
             ) : (
-                <table border="1" cellPadding="10" style={{ borderCollapse: 'collapse', width: '100%' }}>
-                    <thead style={{ background: '#f0f0f0' }}>
-                        <tr>
-                            <th>Name</th>
-                            <th>Base</th>
-                            <th>Unit</th>
-                            <th>Calories</th>
-                            <th>Protein</th>
-                            <th>Carbs</th>
-                            <th>Fats</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {foods.map((food) => (
-                            <tr key={food.id}>
-                                {editingId === food.id ? (
-                                    <>
-                                        <td><input name="name" value={editingFood.name} onChange={handleEditChange} /></td>
-                                        <td><input name="base_amount" type="number" value={editingFood.base_amount} onChange={handleEditChange} /></td>
-                                        <td><input name="unit" value={editingFood.unit} onChange={handleEditChange} /></td>
-                                        <td><input name="calories" type="number" value={editingFood.calories} onChange={handleEditChange} /></td>
-                                        <td><input name="protein" type="number" value={editingFood.protein} onChange={handleEditChange} /></td>
-                                        <td><input name="carbs" type="number" value={editingFood.carbs} onChange={handleEditChange} /></td>
-                                        <td><input name="fats" type="number" value={editingFood.fats} onChange={handleEditChange} /></td>
-                                        <td>
-                                            <button onClick={handleSaveEdit}>Save</button>
-                                            <button onClick={handleCancelEdit}>Cancel</button>
-                                        </td>
-                                    </>
-                                ) : (
-                                    <>
-                                        <td>{food.name}</td>
-                                        <td>{food.base_amount}</td>
-                                        <td>{food.unit}</td>
-                                        <td>{food.calories}</td>
-                                        <td>{food.protein}</td>
-                                        <td>{food.carbs}</td>
-                                        <td>{food.fats}</td>
-                                        <td>
-                                            <button onClick={() => handleEditClick(food)}>Edit</button>{' '}
-                                            <button onClick={() => confirmDelete(food.id)} style={{ color: 'red' }}>Delete</button>{' '}
-                                        </td>
-                                    </>
-                                )}
+                <div className="overflow-x-auto">
+                    <table className="min-w-full border border-gray-300 text-sm text-left">
+                        <thead className="bg-gray-100 text-gray-700">
+                            <tr>
+                                <th className="px-4 py-2">Name</th>
+                                <th className="px-4 py-2">Base</th>
+                                <th className="px-4 py-2">Unit</th>
+                                <th className="px-4 py-2">Calories</th>
+                                <th className="px-4 py-2">Protein</th>
+                                <th className="px-4 py-2">Carbs</th>
+                                <th className="px-4 py-2">Fats</th>
+                                <th className="px-4 py-2">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {foods.map((food) => (
+                                <tr key={food.id} className="border-t border-gray-200">
+                                    {editingId === food.id ? (
+                                        <>
+                                            {['name', 'base_amount', 'unit', 'calories', 'protein', 'carbs', 'fats'].map((field, index) => (
+                                                <td key={index} className="px-4 py-2">
+                                                    <input
+                                                        name={field}
+                                                        value={editingFood[field]}
+                                                        type={field === 'name' || field === 'unit' ? 'text' : 'number'}
+                                                        onChange={handleEditChange}
+                                                        className="w-full p-1 border border-gray-300 rounded"
+                                                    />
+                                                </td>
+                                            ))}
+                                            <td className="px-4 py-2">
+                                                <div className="space-x-2">
+                                                    <button onClick={handleSaveEdit} className="text-green-600 hover:underline">Save</button>
+                                                    <button onClick={handleCancelEdit} className="text-gray-500 hover:underline">Cancel</button>
+                                                </div>
+                                            </td>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <td className="px-4 py-2">{food.name}</td>
+                                            <td className="px-4 py-2">{food.base_amount}</td>
+                                            <td className="px-4 py-2">{food.unit}</td>
+                                            <td className="px-4 py-2">{food.calories}</td>
+                                            <td className="px-4 py-2">{food.protein}</td>
+                                            <td className="px-4 py-2">{food.carbs}</td>
+                                            <td className="px-4 py-2">{food.fats}</td>
+                                            <td className="px-4 py-2 space-x-2">
+                                                <button onClick={() => handleEditClick(food)} className="text-blue-600 hover:underline">Edit</button>
+                                                <button onClick={() => confirmDelete(food.id)} className="text-red-600 hover:underline">Delete</button>
+                                            </td>
+                                        </>
+                                    )}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );

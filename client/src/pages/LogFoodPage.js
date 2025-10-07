@@ -58,60 +58,90 @@ function LogFoodPage() {
     };
 
     return (
-        <div className="p-6 max-w-xl mx-auto">
-            <h2 className="text-2xl font-bold text-green-700 mb-6">Log Food</h2>
-            <form onSubmit={handleSubmit} className="space-y-4 bg-white p-4 rounded shadow-sm">
-                
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Food: </label>
-                    <select name="saved_food_id" value={form.saved_food_id} onChange={handleChange} required className="w-full mt-1 p-2 border-gray-300 rounded">
+        <div className="min-h-screen bg-gray-50 p-6 flex items-start justify-center">
+            <div className="w-full max-w-md">
+                <h2 className="text-2xl font-bold text-green-700 mb-4 text-center">Log Food</h2>
+
+                <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow max-w-md">
+                    {/* Food dropdown */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Food</label>
+                        <select
+                        name="saved_food_id"
+                        value={form.saved_food_id}
+                        onChange={handleChange}
+                        required
+                        className="w-full p-2 border border-gray-300 rounded"
+                        >
                         <option value="">-- Select Food --</option>
                         {savedFoods.map(food => (
                             <option key={food.id} value={food.id}>
-                                {food.name} ({food.base_amount}{food.unit})
+                            {food.name} ({food.base_amount}{food.unit})
                             </option>
                         ))}
-                    </select>
-                </div>
+                        </select>
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Amount consumed: </label>
-                    <input 
+                    {/* Amount consumed */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Amount Consumed</label>
+                        <input
                         type="number"
                         name="consumed_amount"
                         value={form.consumed_amount}
                         onChange={handleChange}
                         required
-                        className="w-full mt-1 p-2 border border-gray-300 rounded"
-                    />
-                </div>
+                        className="w-full p-2 border border-gray-300 rounded"
+                        />
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Meal Type: </label>
-                    <select name="meal_type" value={form.meal_type} onChange={handleChange} className="w-full mt-1 p-2 border border-gray-300 rounded">
+                    {/* Meal type */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Meal Type</label>
+                        <select
+                        name="meal_type"
+                        value={form.meal_type}
+                        onChange={handleChange}
+                        className="w-full p-2 border border-gray-300 rounded"
+                        >
                         <option value="breakfast">Breakfast</option>
                         <option value="lunch">Lunch</option>
                         <option value="dinner">Dinner</option>
                         <option value="snack">Snack</option>
-                    </select>
-                </div>
+                        </select>
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Date: </label><br />
-                    <input
+                    {/* Date */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input
                         type="date"
                         name="date"
                         value={form.date}
                         onChange={handleChange}
                         required
-                        className="w-full mt-1 p-2 border border-gray-300 rounded"
-                    />
-                </div>
-                
-                <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded w-full">Log Food</button>
-            </form>
-            
-            {message && <p className={`mt-4 text-center font-medium ${message.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>{message}</p>}
+                        className="w-full p-2 border border-gray-300 rounded"
+                        />
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="mb-2">
+                        <button
+                        type="submit"
+                        className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
+                        >
+                        Log Food
+                        </button>
+                    </div>
+
+                    {/* Message */}
+                    {message && (
+                        <p className={`text-center font-medium ${message.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
+                        {message}
+                        </p>
+                    )}
+                    </form>
+            </div>
         </div>
     );
 }
