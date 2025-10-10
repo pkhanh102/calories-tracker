@@ -1,5 +1,9 @@
 {
   "dependencies": {
-    "dayjs": "^1.11.18"
+    "@chakra-ui/react": "^3.27.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "dayjs": "^1.11.18",
+    "framer-motion": "^12.23.24"
   }
 }

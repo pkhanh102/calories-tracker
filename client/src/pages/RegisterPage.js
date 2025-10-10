@@ -21,7 +21,7 @@ function RegisterPage() {
         e.preventDefault();
 
         try {
-            const res = await axios.post(`${API_BASE}/auth/register`, formData);
+            await axios.post(`${API_BASE}/auth/register`, formData);
             setMessage('Registration successful! You can now log in.');
         } catch (err) {
             console.error(err);

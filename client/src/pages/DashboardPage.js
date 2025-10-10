@@ -3,11 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import API_BASE from "../apiConfig";
+import {
+  Container,
+  Heading,
+  Text,
+  Stack,
+  Divider,
+  Spinner,
+  Flex,
+  useColorModeValue,
+  SimpleGrid,
+  Box,
+  Progress,
+  useBreakpointValue
+} from '@chakra-ui/react';
+import { percent } from 'framer-motion';
 
 function DashboardPage() {
     const navigate = useNavigate();
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const cardBg = useColorModeValue("white", "gray.800");
+    const cardBorder = useColorModeValue("gray.200", "gray.700");
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -35,56 +53,126 @@ function DashboardPage() {
         fetchSummary();
     }, [navigate]);
 
-    if (loading) return <p className='p-6 text-gray=600'>Loading...</p>;
+    const getProgressBarColor = (percent) => {
+        if (percent < 60) return "blue";
+        if (percent < 90) return "orange";
+        return "green";
+    }
+
+    const isMobile = useBreakpointValue({ base: true, md: false});
+
+    if (loading) return (
+        <Flex p={10} align="center" justify="center" direction="column" minH="50vh">
+            <Spinner size="lg" color="green.500" />
+            <Text mt={4}>Loading...</Text>
+        </Flex>
+    );
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-green-700 mb-6">Dashboard</h2>
+        <Container maxW="4xl" py={10}>
+            {/* Page Title */}
+            <Heading as="h2" size="xl" color="green.600" mb={8}>Dashboard</Heading>
+            <Text fontSize="lg" color="gray.600" mb={6}>
+                Welcome back 👋 Ready to crush your goals today?
+            </Text>
 
-            <div className="mb-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Today's Nutrition Summary</h3>
+            {/* Nutrition Summary Section */}
+            <Box mb={10} p={[4, 6]} borderWidth="1px" borderRadius="md" bg={cardBg} borderColor={cardBorder} shadow="sm">
+                <Heading as="h3" size="md" mb={4}>Today's Nutrition Summary</Heading>
+
                 {summary ? (
-                    <div className="space-y-1 text-gray-700">
-                        <p>Calories: <strong>{summary.totals.calories}</strong> / {summary.goals.calories_goal} kcal</p>
-                        <p>Protein: <strong>{summary.totals.protein}g</strong> / {summary.goals.protein_goal_g}g</p>
-                        <p>Carbs: <strong>{summary.totals.carbs}g</strong> / {summary.goals.carb_goal_g}g</p>
-                        <p>Fats: <strong>{summary.totals.fats}g</strong> / {summary.goals.fat_goal_g}g</p>
-                    </div>
+                    <SimpleGrid column={[1, 2]} spacing={4}>
+                        {[
+                            { label: "🔥 Calories", value: summary.totals.calories, goal: summary.goals.calories_goal, unit: "kcal" },
+                            { label: "🍗 Protein", value: summary.totals.protein, goal: summary.goals.protein_goal_g, unit: "g" },
+                            { label: "🍞 Carbs", value: summary.totals.carbs, goal: summary.goals.carb_goal_g, unit: "g" },
+                            { label: "🥑 Fats", value: summary.totals.fats, goal: summary.goals.fat_goal_g, unit: "g" }
+                        ].map((item, idx) => {
+                            const percent = Math.min((item.value / item.goal) * 100, 100);
+                            return (
+                            <Box key={idx}>
+                                <Flex justify="space-between" mb={1}>
+                                    <Text fontWeight="medium">{item.label}</Text>
+                                    <Text fontSize="sm">{item.value} / {item.goal} {item.unit}</Text>
+                                </Flex>
+                                <Progress
+                                    value={percent}
+                                    size="sm"
+                                    colorScheme={getProgressBarColor(percent)}
+                                    borderRadius="md"
+                                    transition="all 0.4s ease"
+                                />
+                            </Box>
+                            );
+                        })}
+                    </SimpleGrid>
                 ) : (
-                    <p className="text-gray-500">No summary available.</p>
+                    <Text color="gray.500">No summary available.</Text>
                 )}
-            </div>
+            </Box>
+                
+            <Divider mb={10} />
 
-            <hr className="border-gray-300 mb-6" />
+            {/* Logged Foods */}
+            <Box>
+                <Heading as="h3" size="md" mb={6}>Today's Log</Heading>
+                {summary?.by_meal ? (
+                    ['breakfast', 'lunch', 'dinner', 'snack'].map(meal => (
+                        <Box key={meal} mb={8}>
+                            <Flex align="center" mb={3}>
+                                <Heading as="h4" size="sm" color="green.500" textTransform="capitalize">
+                                    {meal}
+                                </Heading>
+                            </Flex>
 
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Today's Log</h3>
-            {summary?.by_meal ? (
-                ['breakfast', 'lunch', 'dinner', 'snack'].map(meal => (
-                    <div key={meal} className="mb-6">
-                        <h4 className="text-lg font-medium text-green-600 mb-2">
-                            {meal.charAt(0).toUpperCase() + meal.slice(1)}
-                        </h4>
-                        {summary.by_meal[meal] && summary.by_meal[meal].length > 0 ? (
-                            <ul className="space-y-1 list-disc list-inside text-gray-700">
-                                {summary.by_meal[meal].map(item => (
-                                    <li key={item.id}>
-                                        <span className="font-medium">{item.name}</span> - {item.consumed_amount}{item.unit} →
-                                        {item.calculated_calories} kcal |
-                                        {item.calculated_protein}g P /
-                                        {item.calculated_carbs}g C /
-                                        {item.calculated_fats}g F
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500">No items logged.</p>
-                        )}
-                    </div>
-                ))
-            ) : (
-                <p className="text-gray-500">Loading log data...</p>
-            )}
-        </div>
+                            {summary.by_meal[meal] && summary.by_meal[meal].length > 0 ? (
+                                <Stack spacing={3}>
+                                    {summary.by_meal[meal].map(item => (
+                                        <Box
+                                            key={item.id}
+                                            p={4}
+                                            borderWidth="1px"
+                                            borderRadius="md"
+                                            bg="gray.50"
+                                            shadow="sm"
+                                            transition="all 0.2s"
+                                            _hover={{ shadow: "md", transform: "translateY(-2px)" }}
+                                        >
+                                            <Text fontWeight="semibold" fontSize="md">
+                                                {item.name} - {item.consumed_amount}{item.unit}
+                                            </Text>
+
+                                            <SimpleGrid columns={[2, null, 4]} spacing={3} mt={2} fontSize="sm" color="gray.700">
+                                                <Box>
+                                                    <Text fontWeight="medium">🔥 Calories</Text>
+                                                    <Text>{item.calculated_calories} kcal</Text>
+                                                </Box>
+                                                <Box>
+                                                    <Text fontWeight="medium">🍗 Protein</Text>
+                                                    <Text>{item.calculated_protein}g</Text>
+                                                </Box>
+                                                <Box>
+                                                    <Text fontWeight="medium">🍞 Carbs</Text>
+                                                    <Text>{item.calculated_carbs}g</Text>
+                                                </Box>
+                                                <Box>
+                                                    <Text fontWeight="medium">🥑 Fats</Text>
+                                                    <Text>{item.calculated_fats}g</Text>
+                                                </Box>
+                                            </SimpleGrid>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                            ) : (
+                                <Text color="gray.500">No items logged.</Text>
+                            )}
+                        </Box>
+                    ))
+                ) : (
+                    <Text color="gray.500">Loading log data...</Text>
+                )}
+            </Box>
+        </Container>
     );
 }
 
