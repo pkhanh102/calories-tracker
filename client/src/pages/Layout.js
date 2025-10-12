@@ -1,37 +1,40 @@
 import React, { useContext } from 'react';
 import { Link as RouterLink, Outlet, useNavigate } from 'react-router-dom';
 import {
-    Box,
-    Flex,
-    Image,
-    Button,
-    Link as ChakraLink,
-    HStack,
-    useColorModeValue,
-    useBreakpointValue,
-    Stack,
-    textDecoration
+  Box,
+  Flex,
+  Image,
+  Button,
+  Link as ChakraLink,
+  Stack,
+  useColorModeValue,
+  IconButton,
+  Collapse,
+  useDisclosure,
 } from '@chakra-ui/react';
+import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import AuthContext from '../context/AuthContext';
 import MacroMateBRM from '../assests/MacroMateBRM.png'
 
 function Layout() {
     const { logout } = useContext(AuthContext);
     const navigate = useNavigate();
+    const { isOpen, onToggle } = useDisclosure();
  
     const handleLogout = () => {
         logout();
         navigate('/login')
     };
     
-    const isMobile = useBreakpointValue({ base: true, md: false })
+    // const isMobile = useBreakpointValue({ base: true, md: false })
+
 
     return (
         <>
             {/* Sticky Navigation */}
             <Box
                 as='nav'
-                position=""
+                position="sticky"
                 top={0}
                 zIndex="sticky"
                 bg={useColorModeValue('white', 'gray.900')}
@@ -60,64 +63,92 @@ function Layout() {
                         </ChakraLink>
                     </Flex>
 
-                    {/* Navigation Links */}
-                    <Stack
-                        direction={{ base: 'column', md: 'row'}}
-                        spacing={[2, 4, 6]}
-                        mt={{ base: 4, md: 0 }}
-                        align="center"
-                    >
-                        <ChakraLink
-                            as={RouterLink}
-                            to="/"
-                            _hover={{ color: 'green.600' }}
-                            fontWeight="medium"
+                    {/* Right: Desktop Nav + Mobile Toggle */}
+                    <Flex align="center">
+                        {/* Hamburger for mobile */}
+                        <IconButton 
+                            display={{ base: 'flex', md: 'none' }}
+                            onClick={onToggle}
+                            icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
+                            variant="ghost"
+                            aria-label="Toggle Navigation"
+                            ml={2}
+                        />
+                        {/* Desktop Nav */}
+                        <Stack
+                            direction="row"
+                            spacing={5}
+                            display={{ base: 'none', md: 'flex' }}
+                            align="center"
+                            ml={8}
                         >
-                            Dashboard
-                        </ChakraLink>
-                        <ChakraLink
-                            as={RouterLink}
-                            to="/log-food"
-                            _hover={{ color: 'green.600' }}
-                            fontWeight="medium"
-                        >
-                            Log Food
-                        </ChakraLink>
-                        <ChakraLink
-                            as={RouterLink}
-                            to="/saved-food"
-                            _hover={{ color: 'green.600' }}
-                            fontWeight="medium"
-                        >
-                            Saved Foods
-                        </ChakraLink>
-                        <ChakraLink
-                            as={RouterLink}
-                            to="/goals"
-                            _hover={{ color: 'green.600' }}
-                            fontWeight="medium"
-                        >
-                            Nutrition Goal
-                        </ChakraLink>
-                        <ChakraLink
-                            as={RouterLink}
-                            to="/history"
-                            _hover={{ color: 'green.600' }}
-                            fontWeight="medium"
-                        >
-                            View Logs
-                        </ChakraLink>
-                        <Button 
-                            size="sm"
-                            colorScheme='red'
-                            variant="solid"
-                            onClick={handleLogout}
-                            _hover={{ bg: 'red.500'}}
-                        >
-                            Logout
-                        </Button>
-                    </Stack>
+                            {navLinks.map((nav) => (
+                                <ChakraLink
+                                    key={nav.label}
+                                    as={RouterLink}
+                                    to={nav.href}
+                                    fontWeight="medium"
+                                    _hover={{ color: 'green.600' }}
+                                >
+                                    {nav.label}
+                                </ChakraLink>
+                            ))}
+                            <Button
+                                size="sm"
+                                colorScheme="red"
+                                onClick={handleLogout}
+                                _hover={{ bg: 'red.500' }}
+                            >
+                                Logout
+                            </Button>
+                        </Stack>
+                    </Flex>
                 </Flex>
+
+                {/* Mobile Navigation Menu */}
+                <Collapse in={isOpen} animateOpacity>
+                    <Box
+                        display={{ base: 'block', md: 'none' }}
+                        px={4}
+                        pb={4}
+                        bg={useColorModeValue('gray.50', 'gray.800')}
+                        rounded="md"
+                        shadow="md"
+                        borderTopWidth="1px solid"
+                        borderColor={useColorModeValue("gray.200", "gray.700")}
+                        mt={2}
+                    >
+                        <Stack spacing={3} mt={4} direction="column">
+                            {navLinks.map((nav) => (
+                                <ChakraLink
+                                key={nav.label}
+                                as={RouterLink}
+                                to={nav.href}
+                                py={2}
+                                px={3}
+                                w="full"
+                                fontWeight="medium"
+                                _hover={{ color: 'green.600' }}
+                                onClick={onToggle}
+                                >
+                                    {nav.label}
+                                </ChakraLink>
+                            ))}
+                            <Button
+                                size="sm"
+                                colorScheme="red"
+                                onClick={() => {
+                                    handleLogout();
+                                    onToggle();
+                                }}
+                                rounded="md"
+                                _hover={{ bg: 'red.500' }}
+                            >
+                                Logout
+                            </Button>
+                        </Stack>
+                    </Box>
+                </Collapse>
             </Box>
 
             {/* Main Page Content */}
@@ -127,5 +158,13 @@ function Layout() {
         </>
     );
 }
+
+const navLinks = [
+  { label: 'Dashboard', href: '/' },
+  { label: 'Log Food', href: '/log-food' },
+  { label: 'Saved Foods', href: '/saved-food' },
+  { label: 'Nutrition Goal', href: '/goals' },
+  { label: 'View Logs', href: '/history' },
+];
 
 export default Layout;

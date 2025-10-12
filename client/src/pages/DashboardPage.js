@@ -14,10 +14,8 @@ import {
   useColorModeValue,
   SimpleGrid,
   Box,
-  Progress,
-  useBreakpointValue
+  Progress
 } from '@chakra-ui/react';
-import { percent } from 'framer-motion';
 
 function DashboardPage() {
     const navigate = useNavigate();
@@ -26,6 +24,8 @@ function DashboardPage() {
 
     const cardBg = useColorModeValue("white", "gray.800");
     const cardBorder = useColorModeValue("gray.200", "gray.700");
+    const itemBg = useColorModeValue("gray.50", "gray.700");
+    const itemBorder = useColorModeValue("gray.200", "gray.600");
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -59,7 +59,7 @@ function DashboardPage() {
         return "green";
     }
 
-    const isMobile = useBreakpointValue({ base: true, md: false});
+    // const isMobile = useBreakpointValue({ base: true, md: false});
 
     if (loading) return (
         <Flex p={10} align="center" justify="center" direction="column" minH="50vh">
@@ -69,7 +69,7 @@ function DashboardPage() {
     );
 
     return (
-        <Container maxW="4xl" py={10}>
+        <Container maxW="4xl" py={10} minH="100vh">
             {/* Page Title */}
             <Heading as="h2" size="xl" color="green.600" mb={8}>Dashboard</Heading>
             <Text fontSize="lg" color="gray.600" mb={6}>
@@ -81,7 +81,7 @@ function DashboardPage() {
                 <Heading as="h3" size="md" mb={4}>Today's Nutrition Summary</Heading>
 
                 {summary ? (
-                    <SimpleGrid column={[1, 2]} spacing={4}>
+                    <SimpleGrid columns={[1, 2]} spacing={4}>
                         {[
                             { label: "🔥 Calories", value: summary.totals.calories, goal: summary.goals.calories_goal, unit: "kcal" },
                             { label: "🍗 Protein", value: summary.totals.protein, goal: summary.goals.protein_goal_g, unit: "g" },
@@ -130,10 +130,11 @@ function DashboardPage() {
                                     {summary.by_meal[meal].map(item => (
                                         <Box
                                             key={item.id}
-                                            p={4}
+                                            p={[3, 4]}
                                             borderWidth="1px"
                                             borderRadius="md"
-                                            bg="gray.50"
+                                            bg={itemBg}
+                                            borderColor={itemBorder}
                                             shadow="sm"
                                             transition="all 0.2s"
                                             _hover={{ shadow: "md", transform: "translateY(-2px)" }}
@@ -142,7 +143,7 @@ function DashboardPage() {
                                                 {item.name} - {item.consumed_amount}{item.unit}
                                             </Text>
 
-                                            <SimpleGrid columns={[2, null, 4]} spacing={3} mt={2} fontSize="sm" color="gray.700">
+                                            <SimpleGrid columns={[2, null, 4]} spacing={[2, 3]} mt={2} fontSize="sm" color="gray.700">
                                                 <Box>
                                                     <Text fontWeight="medium">🔥 Calories</Text>
                                                     <Text>{item.calculated_calories} kcal</Text>
