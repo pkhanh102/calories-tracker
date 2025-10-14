@@ -1,5 +1,22 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
+import {
+    Box,
+    Button,
+    Container,
+    FormControl,
+    FormLabel,
+    Heading,
+    Input,
+    Select,
+    Alert,
+    AlertDescription,
+    AlertIcon,
+    VStack,
+    useColorModeValue,
+    Text,
+    Spinner,
+} from "@chakra-ui/react";
 import API_BASE from "../apiConfig";
 
 function LogFoodPage() {
@@ -11,6 +28,8 @@ function LogFoodPage() {
         date: new Date().toISOString().split('T')[0]
     });
     const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
 
     const token = localStorage.getItem('token');
 
@@ -24,6 +43,8 @@ function LogFoodPage() {
                 setSavedFoods(res.data);
             } catch (err) {
                 console.error('Error fetching foods:', err);
+            } finally {
+                setLoading(false);
             }
         };
         fetchFood();
@@ -35,6 +56,9 @@ function LogFoodPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
+        setMessage("");
+
         try {
             await axios.post(`${API_BASE}/logs`, {
                 saved_food_id: form.saved_food_id,
@@ -54,95 +78,111 @@ function LogFoodPage() {
         } catch (err) {
             console.error('Log error:', err);
             setMessage('❌ Failed to log food. Try again.');
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6 flex items-start justify-center">
-            <div className="w-full max-w-md">
-                <h2 className="text-2xl font-bold text-green-700 mb-4 text-center">Log Food</h2>
+        <Container maxW="md" py={10}>
+            <Box
+                borderWidth="1px"
+                borderRadius="lg"
+                p={8}
+                boxShadow="md"
+                bg={useColorModeValue("white", "gray.800")}
+            >
+                <Heading size="lg" mb={6} textAlign="center" color="green.600">
+                    Log Food
+                </Heading>
 
-                <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow max-w-md">
-                    {/* Food dropdown */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Food</label>
-                        <select
-                        name="saved_food_id"
-                        value={form.saved_food_id}
-                        onChange={handleChange}
-                        required
-                        className="w-full p-2 border border-gray-300 rounded"
-                        >
-                        <option value="">-- Select Food --</option>
-                        {savedFoods.map(food => (
-                            <option key={food.id} value={food.id}>
-                            {food.name} ({food.base_amount}{food.unit})
-                            </option>
-                        ))}
-                        </select>
-                    </div>
+                {message && (
+                    <Alert
+                        status={message.startsWith("✅") ? "success" : "error"}
+                        mb={4}
+                        rounded="md"
+                    >
+                        <AlertIcon />
+                        <AlertDescription>
+                            {message.replace(/^✅\s*|^❌\s*/, '')}
+                        </AlertDescription>
+                    </Alert>
+                )}
 
-                    {/* Amount consumed */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Amount Consumed</label>
-                        <input
-                        type="number"
-                        name="consumed_amount"
-                        value={form.consumed_amount}
-                        onChange={handleChange}
-                        required
-                        className="w-full p-2 border border-gray-300 rounded"
-                        />
-                    </div>
+                {loading ? (
+                    <Box textAlign="center">
+                        <Spinner size="lg" color="green.500" />
+                        <Text mt={3}>Loading saved foods...</Text>
+                    </Box>
+                ) : (
+                    <form onSubmit={handleSubmit}>
+                        <VStack spacing={4}>
+                            <FormControl isRequired>
+                                <FormLabel>Food</FormLabel>
+                                <Select
+                                    name="saved_food_id"
+                                    value={form.saved_food_id}
+                                    onChange={handleChange}
+                                    placeholder="Select Food"
+                                >
+                                    {savedFoods.map((food) => (
+                                        <option key={food.id} value={food.id}>
+                                            {food.name} ({food.base_amount}
+                                            {food.unit})
+                                        </option>
+                                    ))}
+                                </Select>
+                            </FormControl>
 
-                    {/* Meal type */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Meal Type</label>
-                        <select
-                        name="meal_type"
-                        value={form.meal_type}
-                        onChange={handleChange}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        >
-                        <option value="breakfast">Breakfast</option>
-                        <option value="lunch">Lunch</option>
-                        <option value="dinner">Dinner</option>
-                        <option value="snack">Snack</option>
-                        </select>
-                    </div>
+                            <FormControl isRequired>
+                                <FormLabel>Amount Consumed</FormLabel>
+                                <Input
+                                    name="consumed_amount"
+                                    type="number"
+                                    value={form.consumed_amount}
+                                    onChange={handleChange}
+                                    placeholder="e.g. 150"
+                                />
+                            </FormControl>    
 
-                    {/* Date */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                        <input
-                        type="date"
-                        name="date"
-                        value={form.date}
-                        onChange={handleChange}
-                        required
-                        className="w-full p-2 border border-gray-300 rounded"
-                        />
-                    </div>
+                             <FormControl isRequired>
+                                <FormLabel>Meal Type</FormLabel>
+                                <Select
+                                    name="meal_type"
+                                    value={form.meal_type}
+                                    onChange={handleChange}
+                                >
+                                    <option value="breakfast">Breakfast</option>
+                                    <option value="lunch">Lunch</option>
+                                    <option value="dinner">Dinner</option>
+                                    <option value="snack">Snack</option>
+                                </Select>
+                            </FormControl> 
 
-                    {/* Submit Button */}
-                    <div className="mb-2">
-                        <button
-                        type="submit"
-                        className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded"
-                        >
-                        Log Food
-                        </button>
-                    </div>
+                            <FormControl isRequired>
+                                <FormLabel>Date</FormLabel>
+                                <Input
+                                    name="date"
+                                    type="date"
+                                    value={form.date}
+                                    onChange={handleChange}
+                                />
+                            </FormControl>  
 
-                    {/* Message */}
-                    {message && (
-                        <p className={`text-center font-medium ${message.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
-                        {message}
-                        </p>
-                    )}
+                            <Button
+                                type="submit"
+                                colorScheme="green"
+                                width="full"
+                                isLoading={submitting}
+                                loadingText="Logging..."
+                            >
+                                Log Food
+                            </Button>
+                        </VStack>
                     </form>
-            </div>
-        </div>
+                )}
+            </Box>
+        </Container>
     );
 }
 

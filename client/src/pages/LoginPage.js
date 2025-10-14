@@ -81,7 +81,7 @@ function LoginPage() {
                 {message && (
                     <Alert status="error" mb={4} rounded="md">
                         <AlertIcon />
-                        <AlertDescription>{message}</AlertDescription>
+                        <AlertDescription>{message.replace(/^✅\s*|^❌\s*/, '')}</AlertDescription>
                     </Alert>
                 )}
 

@@ -99,7 +99,7 @@ function RegisterPage() {
                         rounded="md"
                     >
                         <AlertIcon />
-                        <AlertDescription>{message}</AlertDescription>
+                        <AlertDescription>{message.replace(/^✅\s*|^❌\s*/, '')}</AlertDescription>
                     </Alert>
                 )}
 

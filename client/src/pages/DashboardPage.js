@@ -26,6 +26,9 @@ function DashboardPage() {
     const cardBorder = useColorModeValue("gray.200", "gray.700");
     const itemBg = useColorModeValue("gray.50", "gray.700");
     const itemBorder = useColorModeValue("gray.200", "gray.600");
+    const textColor = useColorModeValue('gray.700', 'gray.200');
+    const mutedText = useColorModeValue('gray.500', 'gray.400');
+    const hiText = useColorModeValue('gray.600', 'gray.300');
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -72,7 +75,7 @@ function DashboardPage() {
         <Container maxW="4xl" py={10} minH="100vh">
             {/* Page Title */}
             <Heading as="h2" size="xl" color="green.600" mb={8}>Dashboard</Heading>
-            <Text fontSize="lg" color="gray.600" mb={6}>
+            <Text fontSize="lg" color={hiText} mb={6}>
                 Welcome back 👋 Ready to crush your goals today?
             </Text>
 
@@ -107,7 +110,7 @@ function DashboardPage() {
                         })}
                     </SimpleGrid>
                 ) : (
-                    <Text color="gray.500">No summary available.</Text>
+                    <Text color={mutedText}>No summary available.</Text>
                 )}
             </Box>
                 
@@ -143,7 +146,7 @@ function DashboardPage() {
                                                 {item.name} - {item.consumed_amount}{item.unit}
                                             </Text>
 
-                                            <SimpleGrid columns={[2, null, 4]} spacing={[2, 3]} mt={2} fontSize="sm" color="gray.700">
+                                            <SimpleGrid columns={[2, null, 4]} spacing={[2, 3]} mt={2} fontSize="sm" color={textColor}>
                                                 <Box>
                                                     <Text fontWeight="medium">🔥 Calories</Text>
                                                     <Text>{item.calculated_calories} kcal</Text>
@@ -165,12 +168,12 @@ function DashboardPage() {
                                     ))}
                                 </Stack>
                             ) : (
-                                <Text color="gray.500">No items logged.</Text>
+                                <Text color={mutedText}>No items logged.</Text>
                             )}
                         </Box>
                     ))
                 ) : (
-                    <Text color="gray.500">Loading log data...</Text>
+                    <Text color={mutedText}>Loading log data...</Text>
                 )}
             </Box>
         </Container>

@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
+import {
+    Box,
+    Button,
+    Container,
+    FormControl,
+    FormLabel,
+    Input,
+    Heading,
+    Alert,
+    AlertIcon,
+    AlertDescription,
+    VStack,
+    useColorModeValue
+} from '@chakra-ui/react';
 import API_BASE from "../apiConfig";
 
 function GoalPage() {
@@ -69,51 +83,90 @@ function GoalPage() {
     };
 
     return (
-        <div style={{ padding: '2rem' }}>
-            <h2>SetNutritionGoal</h2>
-            <form onSubmit={handleSubmit}>
-                <label>Daily Calories:</label><br />
-                <input
-                    type="number"
-                    name="calories_goal"
-                    value={goals.calories_goal}
-                    onChange={handleChange}
-                    required
-                /><br /><br />
+        <Container maxW="md" py={12}>
+            <Box
+                borderWidth="1px"
+                borderRadius="lg"
+                p={8}
+                boxShadow="md"
+                bg={useColorModeValue('white', 'gray.800')}
+                textAlign="center"
+            >
+                <Heading size="lg" mb={6} color="green.600">
+                    Set Nutrition Goals
+                </Heading>
 
-                <label>Protein %:</label><br />
-                <input
-                    type="number"
-                    name="protein_percent"
-                    value={goals.protein_percent}
-                    onChange={handleChange}
-                    required
-                /><br /><br />
+                {message && (
+                    <Alert
+                        status={message.startsWith("✅") ? "success" : "error"}
+                        mb={6}
+                        rounded="md"
+                    >
+                        <AlertIcon />
+                        <AlertDescription>
+                            {message.replace(/^✅\s*|^❌\s*|^⚠️\s*/, '')}
+                        </AlertDescription>
+                    </Alert>
+                )}
 
-                <label>Carb %:</label><br />
-                <input
-                    type="number"
-                    name="carb_percent"
-                    value={goals.carb_percent}
-                    onChange={handleChange}
-                    required
-                /><br /><br />
+                <form onSubmit={handleSubmit}>
+                    <VStack spacing={4}>
+                        <FormControl isRequired>
+                            <FormLabel>Daily Calories</FormLabel>
+                            <Input
+                                name="calories_goal"
+                                type="number"
+                                value={goals.calories_goal}
+                                onChange={handleChange}
+                                placeholder="e.g., 2200"
+                            />
+                        </FormControl>
 
-                <label>Fat %:</label><br />
-                <input
-                    type="number"
-                    name="fat_percent"
-                    value={goals.fat_percent}
-                    onChange={handleChange}
-                    required
-                /><br /><br />
+                        <FormControl isRequired>
+                            <FormLabel>Protein %</FormLabel>
+                            <Input
+                                name="protein_percent"
+                                type="number"
+                                value={goals.protein_percent}
+                                onChange={handleChange}
+                                placeholder="e.g., 30"
+                            />
+                        </FormControl>
 
-                <button type="submit">Update Goals</button>
-            </form>
+                        <FormControl isRequired>
+                            <FormLabel>Carb %</FormLabel>
+                            <Input
+                                name="carb_percent"
+                                type="number"
+                                value={goals.carb_percent}
+                                onChange={handleChange}
+                                placeholder="e.g., 40"
+                            />
+                        </FormControl>
 
-            <br />
-            {message && <p>{message}</p>}
-        </div>
+                        <FormControl isRequired>
+                            <FormLabel>Fat %</FormLabel>
+                            <Input
+                                name="fat_percent"
+                                type="number"
+                                value={goals.fat_percent}
+                                onChange={handleChange}
+                                placeholder="e.g., 30"
+                            />
+                        </FormControl>
+
+                        <Button
+                            type="submit"
+                            colorScheme="green"
+                            width="full"
+                            mt={2}
+                        >
+                            Update Goals
+                        </Button>
+                    </VStack>
+                </form>
+            </Box>
+        </Container>
     );
 }
 
