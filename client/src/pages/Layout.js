@@ -11,15 +11,17 @@ import {
   IconButton,
   Collapse,
   useDisclosure,
+  useColorMode
 } from '@chakra-ui/react';
-import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
+import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon } from '@chakra-ui/icons';
 import AuthContext from '../context/AuthContext';
-import MacroMateBRM from '../assests/MacroMateBRM.png'
+import MacroMateBRM from '../assests/MacroMateIconBRM.png'
 
 function Layout() {
     const { logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const { isOpen, onToggle } = useDisclosure();
+    const { colorMode, toggleColorMode } = useColorMode();
  
     const handleLogout = () => {
         logout();
@@ -93,6 +95,17 @@ function Layout() {
                                     {nav.label}
                                 </ChakraLink>
                             ))}
+
+                            {/* Dark Mode Toggle (Desktop) */}
+                            <IconButton
+                                aria-label='Toggle Dark Mode'
+                                icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
+                                onClick={toggleColorMode}
+                                variant="ghost"
+                                size="sm"
+                                display={{ base: 'none', md: 'flex' }}
+                            />
+
                             <Button
                                 size="sm"
                                 colorScheme="red"
@@ -134,6 +147,18 @@ function Layout() {
                                     {nav.label}
                                 </ChakraLink>
                             ))}
+
+                            <Button
+                                leftIcon={  
+                                    colorMode === 'light' ? <MoonIcon /> : <SunIcon />
+                                }
+                                onClick={toggleColorMode}
+                                variant="outline"
+                                w="full"
+                            >
+                                {colorMode === 'light' ? "Dark Mode" : "Light Mode"}
+                            </Button>
+
                             <Button
                                 size="sm"
                                 colorScheme="red"
