@@ -1,9 +1,65 @@
 import React, { useState, useEffect} from "react";
 import axios from "axios";
 import API_BASE from "../apiConfig";
+import {
+    Box,
+    Heading,
+    Input,
+    InputGroup,
+    FormControl,
+    FormLabel,
+    Button,
+    useToast,
+    Table,
+    Thead,
+    Tbody,
+    Tr,
+    Th,
+    Td,
+    TableContainer,
+    Container,
+    Stack,
+    Text,
+    useColorModeValue,
+    useBreakpointValue,
+    useDisclosure,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
+    Flex,
+    SimpleGrid,
+    InputLeftElement
+} from "@chakra-ui/react";
+import { AddIcon, SearchIcon } from "@chakra-ui/icons";
+
+// ✅ Reusable FoodForm component
+function FoodForm({ foodData, onChange }) {
+    return (
+        <Stack spacing={3}>
+            {["name", "base_amount", "unit", "calories", "protein", "carbs", "fats"].map((field, index) => (
+                <FormControl key={index} isRequired>
+                    <FormLabel textTransform="capitalize">{field.replace("_", " ")}</FormLabel>
+                    <Input
+                        type={field === "name" || field === "unit" ? "text" : "number"}
+                        name={field}
+                        value={foodData[field]}
+                        onChange={onChange}
+                        size="sm"
+                    />
+                </FormControl>
+            ))}
+        </Stack>
+    );
+}
 
 function SavedFoodsPage() {
     const [foods, setFoods] = useState([]);
+    const [filteredFoods, setFilteredFoods] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
     const [error, setError] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [editingFood, setEditingFood] = useState({});
@@ -17,9 +73,27 @@ function SavedFoodsPage() {
         fats: ''
     });
 
+    const toast = useToast();
+    const textColor = useColorModeValue("gray.600", "gray.300");
+    const bgCard = useColorModeValue("white", "gray.800");
+    const editHighlight = useColorModeValue("green.50", "green.700");
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    const isMobile = useBreakpointValue({ base: true, md: false });
+
     useEffect(() => {
         fetchSavedFoods();
     }, []);
+
+    useEffect(() => {
+        // Live Filtering
+        if (searchQuery.trim() === "") setFilteredFoods(foods);
+        else {
+            const filtered = foods.filter(f =>
+                f.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredFoods(filtered);
+        }
+    }, [searchQuery, foods]);
 
     const fetchSavedFoods = async () => {
         try {
@@ -64,8 +138,10 @@ function SavedFoodsPage() {
 
             // Refresh food list
             fetchSavedFoods();
+            toast({ title: "Food added successfully", status: "success", isClosable: true });
         } catch (err) {
             console.error('Failed to add food: ', err);
+            toast({ title: "Failed to add food", status: "error", isClosable: true });
         }
     };  
 
@@ -92,9 +168,11 @@ function SavedFoodsPage() {
             setEditingId(null);
             setEditingFood({});
             fetchSavedFoods(); // Refresh list
+            toast({ title: "Food updated", status: "success", isClosable: true });
         } catch (err) {
             console.error('Failed to update food: ', err);
             setError('Failed to update food.');
+            toast({ title: "Failed to update food", status: "error", isClosable: true });
         }
     };
 
@@ -112,9 +190,11 @@ function SavedFoodsPage() {
 
             // Refresh list after delete
             fetchSavedFoods();
+            toast({ title: "Food deleted", status: "success", isClosable: true });
         } catch (err) {
             console.error('Failed to delete food: ', err);
             setError('Failed to delete food.');
+            toast({ title: "Failed to delete food", status: "error", isClosable: true });
         }
     };
 
@@ -125,96 +205,193 @@ function SavedFoodsPage() {
     };
  
     return (
-        <div className="p-6 max-w-5xl mx-auto">
-            {/* Add Food Form */}
-            <div className="mb-10 bg-white p-6 rounded shadow max-w-md">
-                <h2 className="text-2xl font-bold text-green-700 mb-6">Add New Saved Food</h2>
-                <form onSubmit={handleAddFood} className="space-y-4">
-                    {['name', 'base_amount', 'unit', 'calories', 'protein', 'carbs', 'fats'].map((field, index) => (
-                        <div key={index}>
-                            <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
-                                {field.replace('_', ' ')};
-                            </label>
-                            <input 
-                                type={field === 'name' || field === 'unit' ?  'text' : 'number'}
-                                name={field}
-                                value={newFood[field]}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full p-2 border border-gray-300 rounded"
-                            />
-                        </div>
-                    ))}
-                    <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">Add Food</button>
-                </form>
-            </div>
+        <Container maxW="6xl" py={10}>
+            {/* Header row */}
+            <Flex justify="space-between" align="center" mb={6} wrap="wrap" gap={4}>
+                <Heading size="lg" color="green.600">Saved Foods</Heading>
+                <Flex gap={3} align="center">
+                    <InputGroup maxW="200px">
+                    <InputLeftElement pointerEvents="none" children={<SearchIcon color="gray.400" />} />
+                        <Input
+                            placeholder="Search foods..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            size="sm"
+                            borderRadius="md"
+                            p={5}
+                            pl={9}
+                        />
+                    </InputGroup>
+                    <Button
+                        leftIcon={<AddIcon />}
+                        colorScheme="green"
+                        onClick={onOpen}
+                        size="sm"
+                        p={5}
+                    >
+                    Add New Food
+                    </Button>
+                </Flex>
+            </Flex>
 
-            {/* Saved Food Table */}
-            <h2 className="text-2xl font-bold text-green-700 mb-4">Saved Foods</h2>
-            {error && <p className="text-red-600 mb-4">{error}</p>}
+            {error && <Text color="red.500">{error}</Text>}
 
             {foods.length === 0 ? (
-                <p className="text-gray-500">No saved foods yet.</p>
+                <Text color={textColor}>No saved foods yet.</Text>
+            ) : isMobile ? (
+                // Mobile view: Card layout
+                <Stack spacing={4}>
+                    {filteredFoods.map((food) => (
+                        <Box
+                            key={food.id}
+                            p={4}
+                            borderWidth="1px"
+                            borderRadius="md"
+                            bg={bgCard}
+                            shadow="sm"
+                            transition="all 0.2s"
+                            _hover={{ shadow: "md" }}
+                        >
+                            {editingId === food.id ? (
+                                <Stack spacing={2}>
+                                    <FoodForm foodData={editingFood} onChange={handleEditChange} />
+                                    <Flex gap={2} pt={2}>
+                                        <Button size="sm" colorScheme="green" onClick={handleSaveEdit}>Save</Button>
+                                        <Button size="sm" variant="ghost" onClick={handleCancelEdit}>Cancel</Button>
+                                    </Flex>
+                                </Stack>
+                            ) : (
+                                <Stack spacing={3} >
+                                    {/* Food name */}
+                                    <Text fontWeight="bold" fontSize="md" color="green.500">
+                                        {food.name}
+                                    </Text>
+
+                                    {/* Grid layout for macros + base/unit */}
+                                    <SimpleGrid columns={3} spacing={3} fontSize="sm">
+                                        <Box>
+                                            <Text fontWeight="semibold">Calories</Text>
+                                            <Text>{food.calories} kcal</Text>
+                                        </Box>
+                                        <Box>
+                                            <Text fontWeight="semibold">Base</Text>
+                                            <Text>{food.base_amount}</Text>
+                                        </Box>
+                                        <Box>
+                                            <Text fontWeight="semibold">Unit</Text>
+                                            <Text>{food.unit}</Text>
+                                        </Box>
+                                        <Box>
+                                            <Text fontWeight="semibold">Protein</Text>
+                                            <Text>{food.protein}g</Text>
+                                        </Box>
+                                        <Box>
+                                            <Text fontWeight="semibold">Carbs</Text>
+                                            <Text>{food.carbs}g</Text>
+                                        </Box>
+                                        <Box>
+                                            <Text fontWeight="semibold">Fats</Text>
+                                            <Text>{food.fats}g</Text>
+                                        </Box>
+                                    </SimpleGrid>
+
+                                    {/* Actions */}
+                                    <Flex gap={3} pt={1}>
+                                        <Button size="sm" variant="link" colorScheme="blue" mr={3} onClick={() => handleEditClick(food)}>
+                                            Edit
+                                        </Button>
+                                        <Button size="sm" variant="link" colorScheme="red"  onClick={() => confirmDelete(food.id)}>
+                                            Delete
+                                        </Button>
+                                    </Flex>
+                                </Stack>
+                            )}
+                        </Box>
+                    ))}
+                </Stack>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full border border-gray-300 text-sm text-left">
-                        <thead className="bg-gray-100 text-gray-700">
-                            <tr>
-                                <th className="px-4 py-2">Name</th>
-                                <th className="px-4 py-2">Base</th>
-                                <th className="px-4 py-2">Unit</th>
-                                <th className="px-4 py-2">Calories</th>
-                                <th className="px-4 py-2">Protein</th>
-                                <th className="px-4 py-2">Carbs</th>
-                                <th className="px-4 py-2">Fats</th>
-                                <th className="px-4 py-2">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {foods.map((food) => (
-                                <tr key={food.id} className="border-t border-gray-200">
+                // Desktop table view
+                <TableContainer bg={bgCard} p={4} borderRadius="md" shadow="sm">
+                    <Table size="sm" variant="simple">
+                        <Thead>
+                            <Tr>
+                                <Th>Name</Th>
+                                <Th>Base</Th>
+                                <Th>Unit</Th>
+                                <Th>Calories</Th>
+                                <Th>Protein</Th>
+                                <Th>Carbs</Th>
+                                <Th>Fats</Th>
+                                <Th>Actions</Th>
+                            </Tr>
+                        </Thead>
+                        <Tbody>
+                            {filteredFoods.map((food) => (
+                                <Tr key={food.id} bg={editingId === food.id ? editHighlight : undefined} transition="0.2s">
                                     {editingId === food.id ? (
                                         <>
                                             {['name', 'base_amount', 'unit', 'calories', 'protein', 'carbs', 'fats'].map((field, index) => (
-                                                <td key={index} className="px-4 py-2">
-                                                    <input
+                                                <Td key={index}>
+                                                    <Input 
                                                         name={field}
                                                         value={editingFood[field]}
-                                                        type={field === 'name' || field === 'unit' ? 'text' : 'number'}
                                                         onChange={handleEditChange}
-                                                        className="w-full p-1 border border-gray-300 rounded"
+                                                        type={field === 'name' || field === 'unit' ? 'text' : 'number'}
+                                                        size="sm"
                                                     />
-                                                </td>
+                                                </Td>
                                             ))}
-                                            <td className="px-4 py-2">
-                                                <div className="space-x-2">
-                                                    <button onClick={handleSaveEdit} className="text-green-600 hover:underline">Save</button>
-                                                    <button onClick={handleCancelEdit} className="text-gray-500 hover:underline">Cancel</button>
-                                                </div>
-                                            </td>
+                                            <Td>
+                                                <Stack direction="row" spacing={2}>
+                                                    <Button size="sm" colorScheme="green" onClick={handleSaveEdit}>Save</Button>
+                                                    <Button size="sm" variant="ghost" onClick={handleCancelEdit}>Cancel</Button>
+                                                </Stack>
+                                            </Td>
                                         </>
                                     ) : (
                                         <>
-                                            <td className="px-4 py-2">{food.name}</td>
-                                            <td className="px-4 py-2">{food.base_amount}</td>
-                                            <td className="px-4 py-2">{food.unit}</td>
-                                            <td className="px-4 py-2">{food.calories}</td>
-                                            <td className="px-4 py-2">{food.protein}</td>
-                                            <td className="px-4 py-2">{food.carbs}</td>
-                                            <td className="px-4 py-2">{food.fats}</td>
-                                            <td className="px-4 py-2 space-x-2">
-                                                <button onClick={() => handleEditClick(food)} className="text-blue-600 hover:underline">Edit</button>
-                                                <button onClick={() => confirmDelete(food.id)} className="text-red-600 hover:underline">Delete</button>
-                                            </td>
+                                            <Td>{food.name}</Td>
+                                            <Td>{food.base_amount}</Td>
+                                            <Td>{food.unit}</Td>
+                                            <Td>{food.calories}</Td>
+                                            <Td>{food.protein}</Td>
+                                            <Td>{food.carbs}</Td>
+                                            <Td>{food.fats}</Td>
+                                            <Td>
+                                                <Stack direction="row" spacing={2}>
+                                                    <Button size="sm" variant="link" colorScheme="blue" mr={3} onClick={() => handleEditClick(food)}>Edit</Button>
+                                                    <Button size="sm" variant="link" colorScheme="red" onClick={() => confirmDelete(food.id)}>Delete</Button>
+                                                </Stack>
+                                            </Td>
                                         </>
                                     )}
-                                </tr>
+                                </Tr>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
+                        </Tbody>
+                    </Table>
+                </TableContainer>
             )}
-        </div>
+
+            {/* Add New Food Modal */}
+            <Modal isOpen={isOpen} onClose={onClose} size="md">
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Add New Food</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <FoodForm foodData={newFood} onChange={handleInputChange} />
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button colorScheme="green" mr={3} onClick={handleAddFood}>
+                            Add Food
+                        </Button>
+                        <Button variant="ghost" onClick={onClose}>
+                            Cancel
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+        </Container>
     );
 }
 
