@@ -1,6 +1,20 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import API_BASE from "../apiConfig";
+import {
+  Box,
+  Button,
+  Container,
+  Divider,
+  Flex,
+  Heading,
+  Input,
+  SimpleGrid,
+  Spinner,
+  Stack,
+  Text,
+  useColorModeValue,
+} from "@chakra-ui/react";
 
 function FoodLogHistoryPage() {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -8,6 +22,12 @@ function FoodLogHistoryPage() {
   const [error, setError] = useState('');
   const [editingLogId, setEditingLogId] = useState(null);
   const [editingAmount, setEditingAmount] = useState('');
+
+  const bgCard = useColorModeValue("white", "gray.700");
+  const textColor = useColorModeValue("gray.800", "gray.100");
+  const borderColor = useColorModeValue("gray.300", "gray.600");
+
+  const meals = ['breakfast', 'lunch', 'dinner', 'snack'];
 
   const fetchSummary = async (selectedDate) => {
     try {
@@ -66,86 +86,104 @@ function FoodLogHistoryPage() {
     }
   };
 
-  const meals = ['breakfast', 'lunch', 'dinner', 'snack'];
-
   return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Food Log History</h2>
+    <Container maxW="4xl" py={8}>
+      <Flex justify="space-between" align="center" mb={6} wrap="wrap" gap={4}>
+        <Heading size="lg" color="green.600">Food Log History</Heading>
+        <Input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          maxW="200px"
+        />
+      </Flex>
 
-      <label>Select date: </label>
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-      />
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {summary ? (
+      {error && <Text color="red.500">{error}</Text>}
+      {!summary ? (
+        <Flex align="center" justify="center" minH="200px">
+          <Spinner size="lg" />
+          <Text ml={4}>Loading summary...</Text>
+        </Flex>
+      ) : (
         <>
-          <h3>Daily Totals</h3>
-          <p>
-            Calories: {summary.totals.calories}
-            {summary.goals ? ` / ${summary.goals.calories_goal} kcal` : ''}
-          </p>
-          <p>
-            Protein: {summary.totals.protein}g
-            {summary.goals ? ` / ${summary.goals.protein_goal_g}g` : ''}
-          </p>
-          <p>
-            Carbs: {summary.totals.carbs}g
-            {summary.goals ? ` / ${summary.goals.carb_goal_g}g` : ''}
-          </p>
-          <p>
-            Fats: {summary.totals.fats}g
-            {summary.goals ? ` / ${summary.goals.fat_goal_g}g` : ''}
-          </p>
+          {/* Daily Totals */}
+          <Box bg={bgCard} p={5} borderRadius="md" shadow="sm" mb={6}>
+            <Heading size="md" mb={4}>Daily Totals</Heading>
+            <SimpleGrid columns={[1, 2]} spacing={4} fontSize="sm" color={textColor}>
+              <Text>
+                🔥 Calories: <strong>{summary.totals.calories}</strong>
+                {summary.goals && ` / ${summary.goals.calories_goal} kcal`}
+              </Text>
+              <Text>
+                🍗 Protein: <strong>{summary.totals.protein}g</strong>
+                {summary.goals && ` / ${summary.goals.protein_goal_g}g`}
+              </Text>
+              <Text>
+                🍞 Carbs: <strong>{summary.totals.carbs}g</strong>
+                {summary.goals && ` / ${summary.goals.carb_goal_g}g`}
+              </Text>
+              <Text>
+                🥑 Fats: <strong>{summary.totals.fats}g</strong>
+                {summary.goals && ` / ${summary.goals.fat_goal_g}g`}
+              </Text>
+            </SimpleGrid>
+          </Box>
 
-          <hr />
-
+          {/* Meal Logs */}
           {meals.map((meal) => (
-            <div key={meal} style={{ marginBottom: '1.5rem' }}>
-              <h4>{meal.toUpperCase()}</h4>
-              {summary.by_meal[meal] && summary.by_meal[meal].length > 0 ? (
-                <ul>
-                  {summary.by_meal[meal].map((item) => (
-                    <li key={item.id}>
-                      {item.name} - {item.consumed_amount}{item.unit} →   
-                      {item.calculated_calories} kcal | 
-                      {item.calculated_protein}g P / 
-                      {item.calculated_carbs}g C / 
-                      {item.calculated_fats}g F &nbsp;
+            <Box key={meal} mb={6}>
+              <Heading size="sm" mb={2} color="green.500">{meal.toUpperCase()}</Heading>
+              <Divider mb={3} borderColor={borderColor} />
 
-                      {editingLogId === item.id ? (
-                        <>
-                          <input 
-                            type="number"
-                            value={editingAmount}
-                            onChange={(e) => setEditingAmount(e.target.value)}
-                            style={{ width: '80px' }}
-                          />
-                          <button onClick={() => handleUpdateLog(item.id)}>Save</button>
-                          <button onClick={() => cancelEdit()}>Cancel</button>
-                        </>
-                      ) : (
-                        <>
-                          <button onClick={() => startEdit(item)}>Edit</button>
-                          <button onClick={() => handleDeleteLog(item.id)} style={{ color: 'red', marginLeft: '0.5rem' }}>Delete</button>
-                        </>
-                      )}
-                    </li>
+              {summary.by_meal[meal] && summary.by_meal[meal].length > 0 ? (
+                <Stack spacing={4}>
+                  {summary.by_meal[meal].map((item) => (
+                    <Box
+                      key={item.id}
+                      p={4}
+                      bg={bgCard}
+                      borderWidth="1px"
+                      borderRadius="md"
+                      borderColor={borderColor}
+                    >
+                      <Flex justify="space-between" align="center" flexWrap="wrap">
+                        <Box mb={[2, 0]}>
+                          <Text fontWeight="semibold">{item.name}</Text>
+                          <Text fontSize="sm" color={textColor}>
+                            {item.calculated_calories} kcal | {item.calculated_protein}g P / {item.calculated_carbs}g C / {item.calculated_fats}g F
+                          </Text>
+                        </Box>
+
+                        {editingLogId === item.id ? (
+                          <Flex gap={2} align="center">
+                            <Input
+                              type="number"
+                              size="sm"
+                              width="80px"
+                              value={editingAmount}
+                              onChange={(e) => setEditingAmount(e.target.value)}
+                            />
+                            <Button size="sm" colorScheme="green" onClick={() => handleUpdateLog(item.id)}>Save</Button>
+                            <Button size="sm" variant="ghost" onClick={cancelEdit}>Cancel</Button>
+                          </Flex>
+                        ) : (
+                          <Flex gap={3}>
+                            <Button size="sm" variant="link" colorScheme="blue" onClick={() => startEdit(item)}>Edit</Button>
+                            <Button size="sm" variant="link" colorScheme="red" onClick={() => handleDeleteLog(item.id)}>Delete</Button>
+                          </Flex>
+                        )}
+                      </Flex>
+                    </Box>
                   ))}
-                </ul>
+                </Stack>
               ) : (
-                <p>No entries.</p>
+                <Text fontSize="sm" color="gray.400">No entries.</Text>
               )}
-            </div>
+            </Box>
           ))}
         </>
-      ) : (
-        <p>Loading summary...</p>
       )}
-    </div>
+    </Container>
   );
 }
 
