@@ -24,8 +24,9 @@ function FoodLogHistoryPage() {
   const [editingAmount, setEditingAmount] = useState('');
 
   const bgCard = useColorModeValue("white", "gray.700");
-  const textColor = useColorModeValue("gray.800", "gray.100");
-  const borderColor = useColorModeValue("gray.300", "gray.600");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.700", "gray.200");
+  const mutedText = useColorModeValue("gray.500", "gray.400");
 
   const meals = ['breakfast', 'lunch', 'dinner', 'snack'];
 
@@ -69,11 +70,17 @@ function FoodLogHistoryPage() {
     setEditingAmount('');
   };
 
-  const handleUpdateLog = async (logId) => {
+  const handleUpdateLog = async (log) => {
+    if (!editingAmount || isNaN(editingAmount)) {
+      alert("Please enter a valid number.");
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`${API_BASE}/logs/${logId}`, {
-        consumed_amount: editingAmount
+      await axios.put(`${API_BASE}/logs/${log.id}`, {
+        consumed_amount: Number(editingAmount),
+        meal_type: log.meal_type,
+        date: date,
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -87,7 +94,7 @@ function FoodLogHistoryPage() {
   };
 
   return (
-    <Container maxW="4xl" py={8}>
+    <Container maxW="4xl" py={8} minH="100vh">
       <Flex justify="space-between" align="center" mb={6} wrap="wrap" gap={4}>
         <Heading size="lg" color="green.600">Food Log History</Heading>
         <Input
@@ -107,80 +114,110 @@ function FoodLogHistoryPage() {
       ) : (
         <>
           {/* Daily Totals */}
-          <Box bg={bgCard} p={5} borderRadius="md" shadow="sm" mb={6}>
-            <Heading size="md" mb={4}>Daily Totals</Heading>
-            <SimpleGrid columns={[1, 2]} spacing={4} fontSize="sm" color={textColor}>
-              <Text>
-                🔥 Calories: <strong>{summary.totals.calories}</strong>
-                {summary.goals && ` / ${summary.goals.calories_goal} kcal`}
-              </Text>
-              <Text>
-                🍗 Protein: <strong>{summary.totals.protein}g</strong>
-                {summary.goals && ` / ${summary.goals.protein_goal_g}g`}
-              </Text>
-              <Text>
-                🍞 Carbs: <strong>{summary.totals.carbs}g</strong>
-                {summary.goals && ` / ${summary.goals.carb_goal_g}g`}
-              </Text>
-              <Text>
-                🥑 Fats: <strong>{summary.totals.fats}g</strong>
-                {summary.goals && ` / ${summary.goals.fat_goal_g}g`}
-              </Text>
+          <Box mb={10} p={[4, 6]} borderWidth="1px" borderRadius="md" bg={bgCard} borderColor={borderColor} shadow="sm">
+            <Heading as="h3" size="md" mb={4}>Nutrition Summary</Heading>
+            <SimpleGrid columns={[1, 2]} spacing={4}>
+              {[
+                { label: "🔥 Calories", value: summary.totals.calories, goal: summary.goals.calories_goal, unit: "kcal" },
+                { label: "🍗 Protein", value: summary.totals.protein, goal: summary.goals.protein_goal_g, unit: "g" },
+                { label: "🍞 Carbs", value: summary.totals.carbs, goal: summary.goals.carb_goal_g, unit: "g" },
+                { label: "🥑 Fats", value: summary.totals.fats, goal: summary.goals.fat_goal_g, unit: "g" }
+              ].map((item, idx) => {
+                const percent = Math.min((item.value / item.goal) * 100, 100);
+                return (
+                  <Box key={idx}>
+                    <Flex justify="space-between" mb={1}>
+                      <Text fontWeight="medium">{item.label}</Text>
+                      <Text fontSize="sm">{item.value} / {item.goal} {item.unit}</Text>
+                    </Flex>
+                    <Box h={2} borderRadius="md" bg="gray.300">
+                      <Box h={2} borderRadius="md" bg="green.400" w={`${percent}%`} transition="width 0.3s" />
+                    </Box>
+                  </Box>
+                );
+              })}
             </SimpleGrid>
           </Box>
 
           {/* Meal Logs */}
-          {meals.map((meal) => (
-            <Box key={meal} mb={6}>
-              <Heading size="sm" mb={2} color="green.500">{meal.toUpperCase()}</Heading>
-              <Divider mb={3} borderColor={borderColor} />
+          <Box>
+            <Heading as="h3" size="md" mb={6}>Logged Foods</Heading>
+            {summary?.by_meal ? (
+              meals.map(meal => (
+                <Box key={meal} mb={8}>
+                  <Flex align="center" mb={3}>
+                    <Heading as="h4" size="sm" color="green.500" textTransform="capitalize">{meal}</Heading>
+                  </Flex>
 
-              {summary.by_meal[meal] && summary.by_meal[meal].length > 0 ? (
-                <Stack spacing={4}>
-                  {summary.by_meal[meal].map((item) => (
-                    <Box
-                      key={item.id}
-                      p={4}
-                      bg={bgCard}
-                      borderWidth="1px"
-                      borderRadius="md"
-                      borderColor={borderColor}
-                    >
-                      <Flex justify="space-between" align="center" flexWrap="wrap">
-                        <Box mb={[2, 0]}>
-                          <Text fontWeight="semibold">{item.name}</Text>
-                          <Text fontSize="sm" color={textColor}>
-                            {item.calculated_calories} kcal | {item.calculated_protein}g P / {item.calculated_carbs}g C / {item.calculated_fats}g F
-                          </Text>
+                  {summary.by_meal[meal] && summary.by_meal[meal].length > 0 ? (
+                    <Stack spacing={3}>
+                      {summary.by_meal[meal].map(item => (
+                        <Box
+                          key={item.id}
+                          p={[3, 4]}
+                          borderWidth="1px"
+                          borderRadius="md"
+                          bg={bgCard}
+                          borderColor={borderColor}
+                          shadow="sm"
+                          transition="all 0.2s"
+                          _hover={{ shadow: "md", transform: "translateY(-2px)" }}
+                        >
+                          <Flex justify="space-between" align="center" flexWrap="wrap">
+                            <Box>
+                              <Text fontWeight="semibold" fontSize="md">
+                                {item.name} - {item.consumed_amount}{item.unit}
+                              </Text>
+                              <SimpleGrid columns={[2, null, 4]} spacing={[2, 3]} mt={2} fontSize="sm" color={textColor}>
+                                <Box>
+                                  <Text fontWeight="medium">🔥 Calories</Text>
+                                  <Text>{item.calculated_calories} kcal</Text>
+                                </Box>
+                                <Box>
+                                  <Text fontWeight="medium">🍗 Protein</Text>
+                                  <Text>{item.calculated_protein}g</Text>
+                                </Box>
+                                <Box>
+                                  <Text fontWeight="medium">🍞 Carbs</Text>
+                                  <Text>{item.calculated_carbs}g</Text>
+                                </Box>
+                                <Box>
+                                  <Text fontWeight="medium">🥑 Fats</Text>
+                                  <Text>{item.calculated_fats}g</Text>
+                                </Box>
+                              </SimpleGrid>
+                            </Box>
+                            {editingLogId === item.id ? (
+                              <Flex gap={2} align="center" mt={3}>
+                                <Input
+                                  type="number"
+                                  size="sm"
+                                  width="80px"
+                                  value={editingAmount}
+                                  onChange={(e) => setEditingAmount(e.target.value)}
+                                />
+                                <Button size="sm" colorScheme="green" onClick={() => handleUpdateLog(item)}>Save</Button>
+                                <Button size="sm" variant="ghost" onClick={cancelEdit}>Cancel</Button>
+                              </Flex>
+                            ) : (
+                              <Flex gap={3} mt={3}>
+                                <Button size="sm" variant="link" colorScheme="blue" onClick={() => startEdit(item)}>Edit</Button>
+                                <Button size="sm" variant="link" colorScheme="red" onClick={() => handleDeleteLog(item.id)}>Delete</Button>
+                              </Flex>
+                            )}
+                          </Flex>
                         </Box>
-
-                        {editingLogId === item.id ? (
-                          <Flex gap={2} align="center">
-                            <Input
-                              type="number"
-                              size="sm"
-                              width="80px"
-                              value={editingAmount}
-                              onChange={(e) => setEditingAmount(e.target.value)}
-                            />
-                            <Button size="sm" colorScheme="green" onClick={() => handleUpdateLog(item.id)}>Save</Button>
-                            <Button size="sm" variant="ghost" onClick={cancelEdit}>Cancel</Button>
-                          </Flex>
-                        ) : (
-                          <Flex gap={3}>
-                            <Button size="sm" variant="link" colorScheme="blue" onClick={() => startEdit(item)}>Edit</Button>
-                            <Button size="sm" variant="link" colorScheme="red" onClick={() => handleDeleteLog(item.id)}>Delete</Button>
-                          </Flex>
-                        )}
-                      </Flex>
-                    </Box>
-                  ))}
-                </Stack>
-              ) : (
-                <Text fontSize="sm" color="gray.400">No entries.</Text>
-              )}
-            </Box>
-          ))}
+                      ))}
+                    </Stack>
+                  ) : (
+                    <Text color={mutedText}>No items logged.</Text>
+                  )}
+                </Box>
+              ))
+            ) : (
+              <Text color={mutedText}>Loading log data...</Text>
+            )}
+          </Box>
         </>
       )}
     </Container>

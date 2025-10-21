@@ -312,7 +312,7 @@ function SavedFoodsPage() {
             ) : (
                 // Desktop table view
                 <TableContainer bg={bgCard} p={4} borderRadius="md" shadow="sm">
-                    <Table size="sm" variant="simple">
+                    <Table size="md" variant="simple">
                         <Thead>
                             <Tr>
                                 <Th>Name</Th>

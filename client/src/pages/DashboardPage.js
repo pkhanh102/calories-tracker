@@ -22,9 +22,7 @@ function DashboardPage() {
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const cardBg = useColorModeValue("white", "gray.800");
-    const cardBorder = useColorModeValue("gray.200", "gray.700");
-    const itemBg = useColorModeValue("gray.50", "gray.700");
+    const itemBg = useColorModeValue("white", "gray.700");
     const itemBorder = useColorModeValue("gray.200", "gray.600");
     const textColor = useColorModeValue('gray.700', 'gray.200');
     const mutedText = useColorModeValue('gray.500', 'gray.400');
@@ -80,7 +78,7 @@ function DashboardPage() {
             </Text>
 
             {/* Nutrition Summary Section */}
-            <Box mb={10} p={[4, 6]} borderWidth="1px" borderRadius="md" bg={cardBg} borderColor={cardBorder} shadow="sm">
+            <Box mb={10} p={[4, 6]} borderWidth="1px" borderRadius="md" bg={itemBg} borderColor={itemBorder} shadow="sm">
                 <Heading as="h3" size="md" mb={4}>Today's Nutrition Summary</Heading>
 
                 {summary ? (
