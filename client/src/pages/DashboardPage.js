@@ -14,13 +14,15 @@ import {
   useColorModeValue,
   SimpleGrid,
   Box,
-  Progress
+  Progress,
+  Button
 } from '@chakra-ui/react';
 
 function DashboardPage() {
     const navigate = useNavigate();
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const itemBg = useColorModeValue("white", "gray.700");
     const itemBorder = useColorModeValue("gray.200", "gray.600");
@@ -39,14 +41,14 @@ function DashboardPage() {
             try {
                 const today = dayjs().format('YYYY-MM-DD');
                 const res = await axios.get(`${API_BASE}/summary?date=${today}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                    headers: { Authorization: `Bearer ${token}` }
                 });
                 setSummary(res.data);
-                setLoading(false);
+                setError(null);
             } catch (err) {
                 console.error('Failed to fetch summary:', err);
+                setError("Failed to load dashboard data. Please try again.");
+            } finally {
                 setLoading(false);
             }
         };
@@ -60,6 +62,28 @@ function DashboardPage() {
         return "green";
     }
 
+    const handleRetry = () => {
+        setLoading(true);
+        setError(null);
+        setSummary(null);
+
+        const today = dayjs().format('YYYY-MM-DD');
+        const token = localStorage.getItem('token');
+        axios.get(`${API_BASE}/summary?date=${today}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(res => {
+            setSummary(res.data);
+        })
+        .catch(err => {
+            console.error('Retry failed:', err);
+            setError("Still unable to load data");
+        })
+        .finally(() => {
+            setLoading(false);
+        });
+    };
+
     // const isMobile = useBreakpointValue({ base: true, md: false});
 
     if (loading) return (
@@ -68,6 +92,15 @@ function DashboardPage() {
             <Text mt={4}>Loading...</Text>
         </Flex>
     );
+
+    if (error) {
+        return (
+            <Flex p={10} align="center" justify="center" direction="column" minH="50vh">
+                <Text fontSize="lg" color="red.500" mb={3}>{error}</Text>
+                <Button onClick={handleRetry} colorScheme="green">Retry</Button>
+            </Flex>
+        );
+    }
 
     return (
         <Container maxW="4xl" py={10} minH="100vh">

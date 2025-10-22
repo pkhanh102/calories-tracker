@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect, useRef} from "react";
 import axios from "axios";
 import API_BASE from "../apiConfig";
 import {
@@ -32,24 +32,45 @@ import {
     ModalCloseButton,
     Flex,
     SimpleGrid,
-    InputLeftElement
+    InputLeftElement,
+    Select
 } from "@chakra-ui/react";
 import { AddIcon, SearchIcon } from "@chakra-ui/icons";
 
 // ✅ Reusable FoodForm component
-function FoodForm({ foodData, onChange, formErrors = {} }) {
+function FoodForm({ foodData, onChange, formErrors = {}, nameRef }) {
     return (
         <Stack spacing={3}>
             {["name", "base_amount", "unit", "calories", "protein", "carbs", "fats"].map((field, index) => (
                 <FormControl key={index} isRequired isInvalid={formErrors?.[field]}>
                     <FormLabel textTransform="capitalize">{field.replace("_", " ")}</FormLabel>
-                    <Input
-                        type={field === "name" || field === "unit" ? "text" : "number"}
-                        name={field}
-                        value={foodData[field]}
-                        onChange={onChange}
-                        size="sm"
-                    />
+
+                    {field === "unit" ? (
+                        <Select
+                            name="unit"
+                            value={foodData.unit}
+                            onChange={onChange}
+                            size="sm"
+                            >
+                            <option value="g">g (grams)</option>
+                            <option value="ml">ml (milliliters)</option>
+                        </Select>
+                    ) : (
+                        <Input
+                            ref={field === "name" ? nameRef : null}
+                            type={field === "name" ? "text" : "number"}
+                            name={field}
+                            value={foodData[field]}
+                            onChange={onChange}
+                            size="sm"
+                        />
+                    )}
+
+                    {formErrors?.[field] && (
+                        <Text fontSize="sm" color="red.500" mt={1}>
+                        {formErrors[field]}
+                        </Text>
+                    )}
                 </FormControl>
             ))}
         </Stack>
@@ -81,7 +102,13 @@ function SavedFoodsPage() {
     const isMobile = useBreakpointValue({ base: true, md: false });
 
     const [formErrors, setFormErrors] = useState({});
-
+    const [foodToDelete, setFoodToDelete] = useState(null);
+    const {
+        isOpen: isDeleteOpen,
+        onOpen: onDeleteOpen,
+        onClose: onDeleteClose
+    } = useDisclosure();
+    const nameInputRef = useRef(null);
 
     useEffect(() => {
         fetchSavedFoods();
@@ -123,6 +150,10 @@ function SavedFoodsPage() {
         const errors = {};
 
         if (!newFood.name.trim()) errors.name = "Name is required.";
+
+        if (!["g", "ml"].includes(newFood.unit))
+            errors.unit = "Unit must be either 'g' or 'ml'.";
+
         ["base_amount", "calories", "protein", "carbs", "fats"].forEach((field) => {
             const value = parseFloat(newFood[field]);
             if (!value || value <= 0) errors[field] = `${field.replace('_', ' ')} must be > 0`;
@@ -157,7 +188,8 @@ function SavedFoodsPage() {
             toast({ title: "Food added successfully", status: "success", isClosable: true });
         } catch (err) {
             console.error('Failed to add food: ', err);
-            toast({ title: "Failed to add food", status: "error", isClosable: true });
+            const backendMessage = err.response?.data?.detail || "Failed to add food. Please try again.";
+            toast({ title: "Add food failed", description: backendMessage, status: "error", isClosable: true });
         }
     };  
 
@@ -186,9 +218,11 @@ function SavedFoodsPage() {
             fetchSavedFoods(); // Refresh list
             toast({ title: "Food updated", status: "success", isClosable: true });
         } catch (err) {
-            console.error('Failed to update food: ', err);
-            setError('Failed to update food.');
-            toast({ title: "Failed to update food", status: "error", isClosable: true });
+            console.error('Failed to update food:', err);
+            
+            const backendMessage = err.response?.data?.detail || "Failed to update food. Please try again.";
+
+            toast({ title: "Update failed", description: backendMessage, status: "error", isClosable: true });
         }
     };
 
@@ -209,15 +243,36 @@ function SavedFoodsPage() {
             toast({ title: "Food deleted", status: "success", isClosable: true });
         } catch (err) {
             console.error('Failed to delete food: ', err);
-            setError('Failed to delete food.');
-            toast({ title: "Failed to delete food", status: "error", isClosable: true });
+            
+            const backendMessage = err.response?.data?.detail || "Failed to delete food. Please try again.";
+            
+            toast({ title: "Delete failed", description: backendMessage, status: "error", isClosable: true });
         }
     };
 
     const confirmDelete = (id) => {
-        if (window.confirm('Are you sure you want to delete this food?')) {
-            handleDelete(id);
-        }
+        const selectedFood = foods.find((f) => f.id === id);
+        setFoodToDelete(selectedFood);
+        onDeleteOpen();
+    };
+
+    const handleModalClose = () => {
+        setFormErrors({});
+        onClose();
+    };
+
+    const handleConfirmedDelete = async () => {
+        if (!foodToDelete) return;
+        await handleDelete(foodToDelete.id);
+        setFoodToDelete(null);
+        onDeleteClose();
+    };
+
+    const handleOpen = () => {
+        onOpen();
+        setTimeout(() => {
+            nameInputRef.current?.focus();
+        }, 100);
     };
  
     return (
@@ -241,7 +296,7 @@ function SavedFoodsPage() {
                     <Button
                         leftIcon={<AddIcon />}
                         colorScheme="green"
-                        onClick={onOpen}
+                        onClick={handleOpen}
                         size="sm"
                         p={5}
                     >
@@ -270,7 +325,7 @@ function SavedFoodsPage() {
                         >
                             {editingId === food.id ? (
                                 <Stack spacing={2}>
-                                    <FoodForm foodData={editingFood} onChange={handleEditChange} />
+                                    <FoodForm foodData={editingFood} onChange={handleEditChange} formErrors={formErrors} nameRef={nameInputRef}/>
                                     <Flex gap={2} pt={2}>
                                         <Button size="sm" colorScheme="green" onClick={handleSaveEdit}>Save</Button>
                                         <Button size="sm" variant="ghost" onClick={handleCancelEdit}>Cancel</Button>
@@ -348,13 +403,25 @@ function SavedFoodsPage() {
                                         <>
                                             {['name', 'base_amount', 'unit', 'calories', 'protein', 'carbs', 'fats'].map((field, index) => (
                                                 <Td key={index}>
-                                                    <Input 
-                                                        name={field}
-                                                        value={editingFood[field]}
-                                                        onChange={handleEditChange}
-                                                        type={field === 'name' || field === 'unit' ? 'text' : 'number'}
-                                                        size="sm"
-                                                    />
+                                                    {field === "unit" ? (
+                                                        <Select
+                                                            name="unit"
+                                                            value={editingFood.unit}
+                                                            onChange={handleEditChange}
+                                                            size="sm"
+                                                        >
+                                                            <option value="g">g (grams)</option>
+                                                            <option value="ml">ml (milliliters)</option>
+                                                        </Select>
+                                                    ) : (
+                                                        <Input 
+                                                            name={field}
+                                                            value={editingFood[field]}
+                                                            onChange={handleEditChange}
+                                                            type={field === 'name' ? 'text' : 'number'}
+                                                            size="sm"
+                                                        />
+                                                    )}
                                                 </Td>
                                             ))}
                                             <Td>
@@ -389,13 +456,13 @@ function SavedFoodsPage() {
             )}
 
             {/* Add New Food Modal */}
-            <Modal isOpen={isOpen} onClose={onClose} size="md">
+            <Modal isOpen={isOpen} onClose={handleModalClose} size="md">
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Add New Food</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        <FoodForm foodData={newFood} onChange={handleInputChange} formErrors={formErrors} />
+                        <FoodForm foodData={newFood} onChange={handleInputChange} formErrors={formErrors} nameRef={nameInputRef} />
                     </ModalBody>
                     <ModalFooter>
                         <Button colorScheme="green" mr={3} onClick={handleAddFood}>
@@ -403,6 +470,26 @@ function SavedFoodsPage() {
                         </Button>
                         <Button variant="ghost" onClick={onClose}>
                             Cancel
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            <Modal isOpen={isDeleteOpen} onClose={onDeleteClose} isCentered>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Delete Food</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        Are you sure you want to delete {" "}
+                        <strong>{foodToDelete?.name}</strong>? This action cannot be undone.
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button onClick={onDeleteClose} variant="ghost" mr={3}>
+                            Cancel
+                        </Button>
+                        <Button colorScheme="red" onClick={handleConfirmedDelete}>
+                            Delete
                         </Button>
                     </ModalFooter>
                 </ModalContent>

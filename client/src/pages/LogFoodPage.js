@@ -30,6 +30,7 @@ function LogFoodPage() {
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
 
     const token = localStorage.getItem('token');
 
@@ -54,18 +55,39 @@ function LogFoodPage() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
+    const validateForm = () => {
+        const errors = {};
+
+        if (!form.saved_food_id) {
+            errors.saved_food_id = "Please select a food item.";
+        }
+
+        const amount = parseFloat(form.consumed_amount);
+        if (!amount || amount <= 0) {
+            errors.consumed_amount = "Amount must be greater than 0.";
+        }
+
+        if (!form.meal_type) {
+            errors.meal_type = "Please select a meal type.";
+        }
+
+        if (!form.date) {
+            errors.date = "Please select a date.";
+        }
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSubmitting(true);
         setMessage("");
 
+        if (!validateForm()) return;
+
+        setSubmitting(true);
         try {
-            await axios.post(`${API_BASE}/logs`, {
-                saved_food_id: form.saved_food_id,
-                consumed_amount: form.consumed_amount,
-                meal_type: form.meal_type,
-                date: form.date
-            }, {
+            await axios.post(`${API_BASE}/logs`, form, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMessage('✅ Food log created!');
@@ -75,6 +97,7 @@ function LogFoodPage() {
                 meal_type: 'breakfast',
                 date: new Date().toISOString().split('T')[0]
             });
+            setFormErrors({});
         } catch (err) {
             console.error('Log error:', err);
             setMessage('❌ Failed to log food. Try again.');
@@ -117,7 +140,7 @@ function LogFoodPage() {
                 ) : (
                     <form onSubmit={handleSubmit}>
                         <VStack spacing={4}>
-                            <FormControl isRequired>
+                            <FormControl isRequired isInvalid={!!formErrors.saved_food_id}>
                                 <FormLabel>Food</FormLabel>
                                 <Select
                                     name="saved_food_id"
@@ -132,9 +155,12 @@ function LogFoodPage() {
                                         </option>
                                     ))}
                                 </Select>
+                                {formErrors.saved_food_id && (
+                                    <Text fontSize="sm" color="red.500" mt={1}>{formErrors.saved_food_id}</Text>
+                                )}
                             </FormControl>
 
-                            <FormControl isRequired>
+                            <FormControl isRequired isInvalid={!!formErrors.consumed_amount}>
                                 <FormLabel>Amount Consumed</FormLabel>
                                 <Input
                                     name="consumed_amount"
@@ -143,9 +169,12 @@ function LogFoodPage() {
                                     onChange={handleChange}
                                     placeholder="e.g. 150"
                                 />
+                                {formErrors.consumed_amount && (
+                                    <Text fontSize="sm" color="red.500" mt={1}>{formErrors.consumed_amount}</Text>
+                                )}
                             </FormControl>    
 
-                             <FormControl isRequired>
+                             <FormControl isRequired isInvalid={!!formErrors.meal_type}>
                                 <FormLabel>Meal Type</FormLabel>
                                 <Select
                                     name="meal_type"
@@ -157,9 +186,12 @@ function LogFoodPage() {
                                     <option value="dinner">Dinner</option>
                                     <option value="snack">Snack</option>
                                 </Select>
+                                {formErrors.meal_type && (
+                                    <Text fontSize="sm" color="red.500" mt={1}>{formErrors.meal_type}</Text>
+                                )}
                             </FormControl> 
 
-                            <FormControl isRequired>
+                            <FormControl isRequired isInvalid={!!formErrors.date}>
                                 <FormLabel>Date</FormLabel>
                                 <Input
                                     name="date"
@@ -167,6 +199,9 @@ function LogFoodPage() {
                                     value={form.date}
                                     onChange={handleChange}
                                 />
+                                {formErrors.date && (
+                                    <Text fontSize="sm" color="red.500" mt={1}>{formErrors.date}</Text>
+                                )}
                             </FormControl>  
 
                             <Button
