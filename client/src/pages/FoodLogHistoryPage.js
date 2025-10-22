@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Container,
-  Divider,
   Flex,
   Heading,
   Input,
@@ -14,6 +13,7 @@ import {
   Stack,
   Text,
   useColorModeValue,
+  Progress,
 } from "@chakra-ui/react";
 
 function FoodLogHistoryPage() {
@@ -118,21 +118,27 @@ function FoodLogHistoryPage() {
             <Heading as="h3" size="md" mb={4}>Nutrition Summary</Heading>
             <SimpleGrid columns={[1, 2]} spacing={4}>
               {[
-                { label: "🔥 Calories", value: summary.totals.calories, goal: summary.goals.calories_goal, unit: "kcal" },
-                { label: "🍗 Protein", value: summary.totals.protein, goal: summary.goals.protein_goal_g, unit: "g" },
-                { label: "🍞 Carbs", value: summary.totals.carbs, goal: summary.goals.carb_goal_g, unit: "g" },
-                { label: "🥑 Fats", value: summary.totals.fats, goal: summary.goals.fat_goal_g, unit: "g" }
+                { label: "🔥 Calories", value: summary.totals.calories, goal: summary.goals?.calories_goal, unit: "kcal" },
+                { label: "🍗 Protein", value: summary.totals.protein, goal: summary.goals?.protein_goal_g, unit: "g" },
+                { label: "🍞 Carbs", value: summary.totals.carbs, goal: summary.goals?.carb_goal_g, unit: "g" },
+                { label: "🥑 Fats", value: summary.totals.fats, goal: summary.goals?.fat_goal_g, unit: "g" },
               ].map((item, idx) => {
-                const percent = Math.min((item.value / item.goal) * 100, 100);
+                const percent = item.goal ? Math.min((item.value / item.goal) * 100, 100) : 0;
+                const color = percent < 60 ? "blue" : percent < 90 ? "orange" : "green";
+
                 return (
                   <Box key={idx}>
                     <Flex justify="space-between" mb={1}>
                       <Text fontWeight="medium">{item.label}</Text>
-                      <Text fontSize="sm">{item.value} / {item.goal} {item.unit}</Text>
+                      <Text fontSize="sm">{item.value} / {item.goal ?? "-"} {item.unit}</Text>
                     </Flex>
-                    <Box h={2} borderRadius="md" bg="gray.300">
-                      <Box h={2} borderRadius="md" bg="green.400" w={`${percent}%`} transition="width 0.3s" />
-                    </Box>
+                    <Progress
+                      value={percent}
+                      size="sm"
+                      colorScheme={color}
+                      borderRadius="md"
+                      transition="all 0.4s ease"
+                    />
                   </Box>
                 );
               })}
@@ -168,7 +174,7 @@ function FoodLogHistoryPage() {
                               <Text fontWeight="semibold" fontSize="md">
                                 {item.name} - {item.consumed_amount}{item.unit}
                               </Text>
-                              <SimpleGrid columns={[2, null, 4]} spacing={[2, 3]} mt={2} fontSize="sm" color={textColor}>
+                              <SimpleGrid columns={[2, null, 4]} spacing={[4 , 6]} mt={2} fontSize="sm" color={textColor} >
                                 <Box>
                                   <Text fontWeight="medium">🔥 Calories</Text>
                                   <Text>{item.calculated_calories} kcal</Text>

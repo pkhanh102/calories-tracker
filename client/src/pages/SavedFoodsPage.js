@@ -37,11 +37,11 @@ import {
 import { AddIcon, SearchIcon } from "@chakra-ui/icons";
 
 // ✅ Reusable FoodForm component
-function FoodForm({ foodData, onChange }) {
+function FoodForm({ foodData, onChange, formErrors = {} }) {
     return (
         <Stack spacing={3}>
             {["name", "base_amount", "unit", "calories", "protein", "carbs", "fats"].map((field, index) => (
-                <FormControl key={index} isRequired>
+                <FormControl key={index} isRequired isInvalid={formErrors?.[field]}>
                     <FormLabel textTransform="capitalize">{field.replace("_", " ")}</FormLabel>
                     <Input
                         type={field === "name" || field === "unit" ? "text" : "number"}
@@ -80,6 +80,9 @@ function SavedFoodsPage() {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const isMobile = useBreakpointValue({ base: true, md: false });
 
+    const [formErrors, setFormErrors] = useState({});
+
+
     useEffect(() => {
         fetchSavedFoods();
     }, []);
@@ -116,8 +119,22 @@ function SavedFoodsPage() {
         }));
     };
 
+    const validateForm = () => {
+        const errors = {};
+
+        if (!newFood.name.trim()) errors.name = "Name is required.";
+        ["base_amount", "calories", "protein", "carbs", "fats"].forEach((field) => {
+            const value = parseFloat(newFood[field]);
+            if (!value || value <= 0) errors[field] = `${field.replace('_', ' ')} must be > 0`;
+        });
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleAddFood = async (e) => {
         e.preventDefault();
+        if (!validateForm()) return;
 
         try {
             const token = localStorage.getItem('token');
@@ -125,7 +142,6 @@ function SavedFoodsPage() {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            // Reset form
             setNewFood({
                 name: '',
                 base_amount: '',
@@ -136,7 +152,7 @@ function SavedFoodsPage() {
                 fats: ''
             });
 
-            // Refresh food list
+            setFormErrors({});
             fetchSavedFoods();
             toast({ title: "Food added successfully", status: "success", isClosable: true });
         } catch (err) {
@@ -379,7 +395,7 @@ function SavedFoodsPage() {
                     <ModalHeader>Add New Food</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        <FoodForm foodData={newFood} onChange={handleInputChange} />
+                        <FoodForm foodData={newFood} onChange={handleInputChange} formErrors={formErrors} />
                     </ModalBody>
                     <ModalFooter>
                         <Button colorScheme="green" mr={3} onClick={handleAddFood}>
