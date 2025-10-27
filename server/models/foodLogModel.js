@@ -59,9 +59,28 @@ const deletedFoodLog = async (logId, userId) => {
     return result.rows[0];
 };
 
+const get7DayMacrosByUserId = async (userId) => {
+    const query = `
+        SELECT
+            TO_CHAR(fl.date, 'YYYY-MM-DD') AS date,
+            SUM((fl.consumed_amount / sf.base_amount) * sf.calories) AS total_calories,
+            SUM((fl.consumed_amount / sf.base_amount) * sf.protein) AS total_protein,
+            SUM((fl.consumed_amount / sf.base_amount) * sf.carbs) AS total_carbs,
+            SUM((fl.consumed_amount / sf.base_amount) * sf.fats) AS total_fats
+        FROM food_logs fl
+        JOIN saved_foods sf ON fl.saved_food_id = sf.id
+        WHERE fl.user_id = $1 AND fl.date >= CURRENT_DATE - INTERVAL '6 days'
+        GROUP BY fl.date
+        ORDER BY fl.date ASC;
+    `;
+    const { rows } = await pool.query(query, [userId]);
+    return rows;
+};
+
 module.exports = {
     createFoodLog,
     getFoodLogsByDate,
     updateFoodLog,
     deletedFoodLog,
+    get7DayMacrosByUserId,
 };

@@ -1,4 +1,4 @@
-const { getFoodLogsByDate } = require('../models/foodLogModel');
+const { getFoodLogsByDate, get7DayMacrosByUserId } = require('../models/foodLogModel');
 const { getNutritionGoalByUserId } = require('../models/nutritionGoalModel');
 
 const handleGetSummary = async (req, res) => {
@@ -74,4 +74,35 @@ const handleGetSummary = async (req, res) => {
     }
 };
 
-module.exports = { handleGetSummary };
+const handleGet7DaySummary = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const rawData = await get7DayMacrosByUserId(userId);
+
+        // Ensure last 7 days are covered, even if no logs
+        const result = [];
+        const today = new Date();
+
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+            const formatted = date.toISOString().split('T')[0];
+
+            const found = rawData.find(item => item.date === formatted);
+            result.push({
+                date: formatted,
+                total_calories: found ? +found.total_calories : 0,
+                total_protein: found ? +found.total_protein : 0,
+                total_carbs: found ? +found.total_carbs : 0,
+                total_fats: found ? +found.total_fats : 0,
+            });
+        }
+
+        res.status(200).json(result);
+    } catch (err) {
+        console.error("Error fetching 7-day summary:", err);
+        res.status(500).json({ message: "Server error fetching 7-day summary" });
+    }
+}
+
+module.exports = { handleGetSummary, handleGet7DaySummary };
