@@ -15,8 +15,10 @@ import {
   SimpleGrid,
   Box,
   Progress,
-  Button
+  Button,
+  useToast,
 } from '@chakra-ui/react';
+import CaloriesChart from "../components/CaloriesChart";
 
 function DashboardPage() {
     const navigate = useNavigate();
@@ -29,6 +31,9 @@ function DashboardPage() {
     const textColor = useColorModeValue('gray.700', 'gray.200');
     const mutedText = useColorModeValue('gray.500', 'gray.400');
     const hiText = useColorModeValue('gray.600', 'gray.300');
+
+    const [chartData, setChartData] = useState([]);
+    const toast = useToast();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -53,7 +58,26 @@ function DashboardPage() {
             }
         };
 
+        const fetch7DaySummary = async () => {
+            try {
+                const res = await axios.get(`${API_BASE}/summary/7days`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setChartData(res.data);
+            } catch (err) {
+                console.error('Failed to fetch 7-day chart data:', err);
+                toast({
+                    title: "Error loading chart",
+                    description: "Could not fetch 7-day calorie summary.",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                });
+            }
+        };
+
         fetchSummary();
+        fetch7DaySummary();
     }, [navigate]);
 
     const getProgressBarColor = (percent) => {
@@ -147,6 +171,18 @@ function DashboardPage() {
                 
             <Divider mb={10} />
 
+            {/* 7-Day Calorie Chart Section */}
+
+            <Divider mb={10} />
+
+            <Box mb={10} p={[4, 6]} borderWidth="1px" borderRadius="md" bg={itemBg} borderColor={itemBorder} shadow="sm">
+                <Heading as="h3" size="md" mb={4}>7-Day Calorie Trend</Heading>
+                {chartData && chartData.length > 0 ? (
+                    <CaloriesChart data={chartData} />
+                ) : (
+                    <Text color={mutedText}>Chart data not available.</Text>
+                )}
+            </Box>
             {/* Logged Foods */}
             <Box>
                 <Heading as="h3" size="md" mb={6}>Today's Log</Heading>
