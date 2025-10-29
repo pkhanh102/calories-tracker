@@ -78,7 +78,7 @@ function DashboardPage() {
 
         fetchSummary();
         fetch7DaySummary();
-    }, [navigate]);
+    }, [navigate, toast]);
 
     const getProgressBarColor = (percent) => {
         if (percent < 60) return "blue";
@@ -107,6 +107,13 @@ function DashboardPage() {
             setLoading(false);
         });
     };
+
+    const processedChartData = chartData.map(item => ({
+        ...item,
+        protein_cals: item.total_protein * 4,
+        carb_cals: item.total_carbs * 4,
+        fat_cals: item.total_fats * 9
+    }))
 
     // const isMobile = useBreakpointValue({ base: true, md: false});
 
@@ -172,17 +179,17 @@ function DashboardPage() {
             <Divider mb={10} />
 
             {/* 7-Day Calorie Chart Section */}
-
-            <Divider mb={10} />
-
             <Box mb={10} p={[4, 6]} borderWidth="1px" borderRadius="md" bg={itemBg} borderColor={itemBorder} shadow="sm">
                 <Heading as="h3" size="md" mb={4}>7-Day Calorie Trend</Heading>
                 {chartData && chartData.length > 0 ? (
-                    <CaloriesChart data={chartData} />
+                    <CaloriesChart data={processedChartData} calorieGoal={summary?.goals?.calories_goal || 2000} />
                 ) : (
                     <Text color={mutedText}>Chart data not available.</Text>
                 )}
             </Box>
+            <Divider mb={10} />
+
+            
             {/* Logged Foods */}
             <Box>
                 <Heading as="h3" size="md" mb={6}>Today's Log</Heading>
