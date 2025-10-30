@@ -32,6 +32,16 @@ function DashboardPage() {
     const mutedText = useColorModeValue('gray.500', 'gray.400');
     const hiText = useColorModeValue('gray.600', 'gray.300');
 
+    const newBg = useColorModeValue("green.50", "green.900");
+    const newBorderColor = useColorModeValue("green.200", "green.600");
+
+    const streakBg = useColorModeValue("blue.50", "blue.900");
+    const streakBorder = useColorModeValue("blue.200", "blue.600");
+    const noStreakBg = useColorModeValue("gray.50", "gray.800");
+    const noStreakBorder = useColorModeValue("gray.200", "gray.600");
+    const streakLabelColor = useColorModeValue("blue.600", "blue.300");
+    const streakValueColor = useColorModeValue("blue.700", "blue.100");
+
     const [chartData, setChartData] = useState([]);
     const toast = useToast();
 
@@ -113,7 +123,22 @@ function DashboardPage() {
         protein_cals: item.total_protein * 4,
         carb_cals: item.total_carbs * 4,
         fat_cals: item.total_fats * 9
-    }))
+    }));
+
+    const computeStreak = (chartData) => {
+        const sorted = [...chartData].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        let streak = 0;
+        for (let day of sorted) {
+            const hasLogged = day.total_calories > 0;
+            if (hasLogged) {
+                streak += 1;
+            } else {
+                break;
+            }
+        }
+        return streak;
+    }
 
     // const isMobile = useBreakpointValue({ base: true, md: false});
 
@@ -133,6 +158,8 @@ function DashboardPage() {
         );
     }
 
+    const streak = computeStreak(chartData);
+
     return (
         <Container maxW="4xl" py={10} minH="100vh">
             {/* Page Title */}
@@ -141,12 +168,47 @@ function DashboardPage() {
                 Welcome back 👋 Ready to crush your goals today?
             </Text>
 
+            {/* Top highlight summary box */}
+            <Box
+                mb={6}
+                p={5}
+                borderWidth="1px"
+                borderRadius="md"
+                bg={newBg}
+                borderColor={newBorderColor}
+                shadow="sm"
+            >
+                <Heading size="sm" mb={2}>Quick Summary</Heading>
+                {summary ? (
+                    <Flex direction={["column", "row"]} justify="space-between" gap={4}>
+                        <Box>
+                            <Text fontSize="sm" color="gray.500">Total Calories</Text>
+                            <Text fontSize="2xl" fontWeight="bold">{summary.totals.calories} kcal</Text>
+                        </Box>
+                        <Box>
+                            <Text fontSize="sm" color="gray.500">Protein</Text>
+                            <Text fontSize="lg" fontWeight="semibold">{summary.totals.protein}g / {summary.goals.protein_goal_g}g</Text>
+                        </Box>
+                        <Box>
+                            <Text fontSize="sm" color="gray.500">Carbs</Text>
+                            <Text fontSize="lg" fontWeight="semibold">{summary.totals.carbs}g / {summary.goals.carb_goal_g}g</Text>
+                        </Box>
+                        <Box>
+                            <Text fontSize="sm" color="gray.500">Fats</Text>
+                            <Text fontSize="lg" fontWeight="semibold">{summary.totals.fats}g / {summary.goals.fat_goal_g}g</Text>
+                        </Box>
+                    </Flex>
+                ) : (
+                    <Text color="gray.500">No data available yet.</Text>
+                )}
+            </Box>
+
             {/* Nutrition Summary Section */}
             <Box mb={10} p={[4, 6]} borderWidth="1px" borderRadius="md" bg={itemBg} borderColor={itemBorder} shadow="sm">
-                <Heading as="h3" size="md" mb={4}>Today's Nutrition Summary</Heading>
+                <Heading as="h3" size="md" mb={4} display="flex" alignItems="center" gap={2}>Macro Progress</Heading>
 
                 {summary ? (
-                    <SimpleGrid columns={[1, 2]} spacing={4}>
+                    <SimpleGrid columns={[1, 2]} spacing={6}>
                         {[
                             { label: "🔥 Calories", value: summary.totals.calories, goal: summary.goals.calories_goal, unit: "kcal" },
                             { label: "🍗 Protein", value: summary.totals.protein, goal: summary.goals.protein_goal_g, unit: "g" },
@@ -162,7 +224,7 @@ function DashboardPage() {
                                 </Flex>
                                 <Progress
                                     value={percent}
-                                    size="sm"
+                                    size="md"
                                     colorScheme={getProgressBarColor(percent)}
                                     borderRadius="md"
                                     transition="all 0.4s ease"
@@ -180,7 +242,39 @@ function DashboardPage() {
 
             {/* 7-Day Calorie Chart Section */}
             <Box mb={10} p={[4, 6]} borderWidth="1px" borderRadius="md" bg={itemBg} borderColor={itemBorder} shadow="sm">
-                <Heading as="h3" size="md" mb={4}>7-Day Calorie Trend</Heading>
+                <Heading as="h3" size="md" mb={4} display="flex" alignItems="center" gap={2}>7-Day Calorie Trend</Heading>
+                { streak > 0 ? (
+                    <Box
+                        mb={6}
+                        p={4}
+                        bg={streakBg}
+                        borderWidth="1px"
+                        borderRadius="md"
+                        borderColor={streakBorder}
+                        textAlign="center"
+                    > 
+                        <Text fontSize="sm" color={streakLabelColor}>Logging Streak</Text>
+                        <Text fontSize="2xl" fontWeight="bold" color={streakValueColor}>
+                            🔥 {streak} {streak === 1 ? "day" : "days"}
+                        </Text>
+                    </Box>
+                ) : (
+                    <Box 
+                        mb={6}
+                        p={4}
+                        bg={noStreakBg}
+                        borderWidth="1px"
+                        borderRadius="md"
+                        borderColor={noStreakBorder}
+                        textAlign="center"
+                    >
+                        <Text fontSize="sm" color={mutedText}>No streak yet</Text>
+                        <Text fontSize="md" color={mutedText}>
+                            Start logging daily to build your streak!
+                        </Text>
+                    </Box>
+                )}
+
                 {chartData && chartData.length > 0 ? (
                     <CaloriesChart data={processedChartData} calorieGoal={summary?.goals?.calories_goal || 2000} />
                 ) : (
@@ -192,7 +286,7 @@ function DashboardPage() {
             
             {/* Logged Foods */}
             <Box>
-                <Heading as="h3" size="md" mb={6}>Today's Log</Heading>
+                <Heading as="h3" size="md" mb={6} display="flex" alignItems="center" gap={2}>Today's Meals</Heading>
                 {summary?.by_meal ? (
                     ['breakfast', 'lunch', 'dinner', 'snack'].map(meal => (
                         <Box key={meal} mb={8}>

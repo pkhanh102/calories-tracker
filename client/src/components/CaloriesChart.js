@@ -11,26 +11,37 @@ import {
     Legend,
 } from 'recharts';
 import dayjs from 'dayjs';
+import { useColorMode } from '@chakra-ui/react';
 
 const CaloriesChart = ({ data, calorieGoal }) => {
+    const { colorMode } = useColorMode();
+
     const formatDay = (dateStr) => dayjs(dateStr).format('ddd');
 
     const CustomTooltip = ({ active, payload, label }) => {
         if (!active || !payload || payload.length === 0) return null;
 
         const data = payload[0].payload;
+
+        const bgColor = colorMode === 'dark' ? '#2D3748' : '#FFFFFF';
+        const textColor = colorMode === 'dark' ? '#F7FAFC' : '#1A202C';
+        const borderColor = colorMode === 'dark' ? '#4A5568' : '#CBD5E0';
+
         return (
             <div style={{
-                backgroundColor: "#fff",
-                border: "1px solid #ccc",
+                backgroundColor: bgColor,
+                color: textColor,
+                border: `1px solid ${borderColor}`,
                 padding: "10px",
-                borderRadius: "8px"
+                borderRadius: "8px",
+                fontSize: "14px",
+                boxShadow: "0 0 10px rgba(0,0,0,0.2)"
             }}>
-                <p><strong>{dayjs(label).format("dddd", "DD-MM")}</strong></p>
+                <p style={{ fontWeight: "bold", marginBottom: 6 }}><strong>{dayjs(label).format("dddd", "DD-MM")}</strong></p>
                 <p>Protein: {data.total_protein}g</p>
                 <p>Carbs: {data.total_carbs}g</p>
                 <p>Fats: {data.total_fats}g</p>
-                <p><strong>Total: {(data.protein_cals + data.carb_cals + data.fat_cals).toFixed(0)} kcal</strong></p>
+                <p style={{ marginTop: 6 }}><strong>Total: {(data.protein_cals + data.carb_cals + data.fat_cals).toFixed(0)} kcal</strong></p>
             </div>
         );
     };
